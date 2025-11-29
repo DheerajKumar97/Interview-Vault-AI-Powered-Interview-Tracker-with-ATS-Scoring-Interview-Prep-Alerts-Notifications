@@ -1,0 +1,32 @@
+{
+  "name": "Interview Vault",
+  "short_name": "Interview Vault",
+  "description": "Your Interview Journey, Simplified & Tracked - Track, manage, and visualize your entire interview journey across top companies with smart analytics.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["productivity", "business"],
+  "screenshots": [
+    {
+      "src": "/hero-bg.jpg",
+      "sizes": "540x720",
+      "type": "image/jpeg"
+    }
+  ]
+}

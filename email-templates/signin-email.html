@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Alert - Interview Vault</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 35px 30px;
+        }
+
+        .alert-box {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .alert-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .alert-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .alert-text {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .details-box {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #999;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .security-section {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .security-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .security-text {
+            font-size: 13px;
+            color: #856404;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .action-button {
+            display: inline-block;
+            padding: 10px 24px;
+            background: #e74c3c;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        .action-button:hover {
+            background: #c0392b;
+        }
+
+        .confirmation-text {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #2e7d32;
+        }
+
+        .confirmation-text strong {
+            color: #1b5e20;
+        }
+
+        .footer {
+            background: #f8f9ff;
+            padding: 20px 30px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .footer-text {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .footer-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .copyright {
+            font-size: 11px;
+            color: #ccc;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .info-text {
+            font-size: 13px;
+            color: #666;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                border-radius: 0;
+            }
+
+            .header {
+                padding: 25px 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .header-title {
+                font-size: 24px;
+            }
+
+            .alert-title {
+                font-size: 16px;
+            }
+
+            .detail-row {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">
+                <div class="logo-icon">✓</div>
+                Interview Vault
+            </div>
+            <p class="header-subtitle">Login Alert</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Alert Box -->
+            <div class="alert-box">
+                <div class="alert-icon">🔐</div>
+                <div class="alert-title">Successful Login</div>
+                <p class="alert-text">
+                    Your account was just accessed. Here are the details:
+                </p>
+            </div>
+
+            <!-- Login Details -->
+            <div class="details-box">
+                <div class="detail-row">
+                    <span class="detail-label">Account</span>
+                    <span class="detail-value">{{email}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Login Time</span>
+                    <span class="detail-value">{{loginTime}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Browser</span>
+                    <span class="detail-value">{{browserInfo}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">IP Address</span>
+                    <span class="detail-value">{{ipAddress}}</span>
+                </div>
+            </div>
+
+            <!-- Confirmation Message -->
+            <div class="confirmation-text">
+                ✓ <strong>Confirmed:</strong> This login was successful. If this wasn't you, secure your account immediately.
+            </div>
+
+            <!-- Security Alert -->
+            <div class="security-section">
+                <div class="security-title">⚠️ Wasn't You?</div>
+                <p class="security-text">
+                    If you didn't log in to your account, your password may be compromised. Secure your account immediately by resetting your password.
+                </p>
+                <a href="{{resetPasswordURL}}" class="action-button">Reset Password Now</a>
+            </div>
+
+            <!-- Info Text -->
+            <p class="info-text">
+                We'll never ask for your password via email. If you receive suspicious emails requesting your credentials, please report them to <a href="mailto:interviewvault.2026@gmail.com" style="color: #667eea; text-decoration: none;">interviewvault.2026@gmail.com</a>
+            </p>
+
+            <!-- Quick Links Info -->
+            <p class="info-text" style="text-align: center; color: #999; font-size: 12px;">
+                For your security, we log all login activities. This helps us protect your account from unauthorized access.
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p class="footer-text">
+                This is an automated security notification from <strong>Interview Vault</strong>
+            </p>
+
+            <p class="footer-text">
+                <a href="{{supportURL}}" class="footer-link">Need Help?</a> • 
+                <a href="{{settingsURL}}" class="footer-link">Account Settings</a> • 
+                <a href="{{privacyURL}}" class="footer-link">Privacy Policy</a>
+            </p>
+
+            <p class="copyright">
+                &copy; 2025 Interview Vault. All rights reserved. | Security is our priority.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

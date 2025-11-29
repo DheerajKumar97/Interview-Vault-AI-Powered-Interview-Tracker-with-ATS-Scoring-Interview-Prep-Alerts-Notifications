@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Interview Vault</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header-logo {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .greeting {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .intro-text {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.8;
+        }
+
+        .benefits-section {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+        }
+
+        .benefits-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .benefits-list {
+            list-style: none;
+        }
+
+        .benefits-list li {
+            padding: 10px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #555;
+            font-size: 15px;
+        }
+
+        .benefits-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 30px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .support-section {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .support-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .support-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .support-email {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer {
+            background: #f8f9ff;
+            padding: 25px 30px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .footer-text {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .social-links {
+            margin: 15px 0;
+        }
+
+        .social-links a {
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 36px;
+            margin: 0 5px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .copyright {
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .highlight {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 0;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+            .content {
+                padding: 25px 20px;
+            }
+
+            .greeting {
+                font-size: 20px;
+            }
+
+            .intro-text {
+                font-size: 14px;
+            }
+
+            .cta-button {
+                padding: 12px 30px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-logo">
+                <div class="logo-icon">IV</div>
+                Interview Vault
+            </div>
+            <p class="header-subtitle">Your Interview Journey, Simplified & Tracked</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Greeting -->
+            <div class="greeting">Welcome to Interview Vault, {{fullName}}! 🎉</div>
+
+            <!-- Introduction -->
+            <p class="intro-text">
+                We're thrilled to have you join our community! Your account has been successfully created, and you're now ready to take control of your entire interview journey.
+            </p>
+
+            <p class="intro-text">
+                Interview Vault is designed to simplify how you track, manage, and visualize your job applications across top companies. Whether you're applying to startups, scale-ups, or Fortune 500 companies, we've got you covered.
+            </p>
+
+            <!-- Benefits Section -->
+            <div class="benefits-section">
+                <div class="benefits-title">✨ What You Can Do Now:</div>
+                <ul class="benefits-list">
+                    <li><strong>Track Applications</strong> - Monitor every job application from submission to offer</li>
+                    <li><strong>7 Interview Stages</strong> - Track your progress through each stage of the interview process</li>
+                    <li><strong>350+ Companies</strong> - Pre-loaded database of top companies to get you started</li>
+                    <li><strong>Smart Analytics</strong> - Get real-time insights into your interview pipeline with our BI Dashboard</li>
+                    <li><strong>Interview Events</strong> - Log calls, interviews, offers, and rejections all in one place</li>
+                    <li><strong>Import/Export</strong> - Bulk import your existing applications or export your data anytime</li>
+                    <li><strong>24/7 Access</strong> - Never miss an opportunity with always-available access</li>
+                </ul>
+            </div>
+
+            <!-- CTA Button -->
+            <a href="{{dashboardURL}}" class="cta-button">🚀 Start Tracking Your Interviews</a>
+
+            <!-- Getting Started Tips -->
+            <p class="intro-text" style="margin-top: 30px;">
+                <strong>Getting Started Tip:</strong> Log in to your dashboard and add your first application. You can manually add existing applications or import them in bulk from an Excel file. Then, start tracking your interview events to see real-time updates on your progress!
+            </p>
+
+            <!-- Support Section -->
+            <div class="support-section">
+                <div class="support-title">💡 Need Help?</div>
+                <p class="support-text">
+                    If you have any questions about getting started with Interview Vault, our comprehensive documentation is available in the app. You can also reach out to our support team at <a href="mailto:interviewvault.2026@gmail.com" class="support-email">interviewvault.2026@gmail.com</a>
+                </p>
+            </div>
+
+            <!-- Thank You Message -->
+            <p class="intro-text" style="text-align: center; color: #667eea; font-style: italic;">
+                Thank you for choosing Interview Vault. We're excited to be part of your job search journey! 🙌
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p class="footer-text">
+                <strong>Interview Vault</strong> - Your Interview Journey, Simplified & Tracked<br>
+                📍 Track. Manage. Visualize. Succeed.
+            </p>
+
+            <div class="social-links">
+                <a href="https://linkedin.com" title="LinkedIn">in</a>
+                <a href="https://twitter.com" title="Twitter">𝕏</a>
+                <a href="https://github.com/DheerajKumar97/interview-compass" title="GitHub">⚙</a>
+            </div>
+
+            <p class="footer-text">
+                This email was sent to <strong>{{email}}</strong> because you recently signed up for Interview Vault.
+            </p>
+
+            <p class="copyright">
+                &copy; 2025 Interview Vault. All rights reserved.<br>
+                Made with ❤️ by Dheeraj Kumar K
+            </p>
+        </div>
+    </div>
+</body>
+</html>
