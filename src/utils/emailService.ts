@@ -5,7 +5,7 @@
  */
 
 // API base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 /**
  * Send Sign Up (Welcome) Email
@@ -17,7 +17,7 @@ export const sendSignUpEmail = async (email: string, fullName: string) => {
   try {
     console.log('📧 Sending Sign Up email to:', email);
 
-    const response = await fetch(`${API_BASE_URL}/api/send-signup-email`, {
+    const response = await fetch(`${API_BASE_URL}/send-signup-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export const sendSignInEmail = async (email: string, fullName: string = '') => {
     // Get IP address (if available from browser)
     const ipAddress = await getClientIP();
 
-    const response = await fetch(`${API_BASE_URL}/api/send-signin-email`, {
+    const response = await fetch(`${API_BASE_URL}/send-signin-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -134,7 +134,7 @@ async function getClientIP(): Promise<string> {
  */
 export const verifyEmailService = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/send-signin-email`, {
+    const response = await fetch(`${API_BASE_URL}/send-signin-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

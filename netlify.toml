@@ -11,6 +11,7 @@
 # Environment variables for email service
 [env]
   FRONTEND_URL = "https://interview-compass.netlify.app"
+  VITE_API_URL = "/.netlify/functions"
 
 # Development environment
 [env.development]
