@@ -454,7 +454,7 @@ The dashboard displays 6 main KPI cards at the top:
 
 The Applications page is where you manage all your job applications, from adding new ones to tracking their progress.
 
-![Applications Page](./readme-images/view-dashboard.png)
+![Add Existing or New Application](https://github.com/DheerajKumar97/Interview-Vault-BI-Powered-Interview-Tracker-with-ATS-Score-Calculation-Alerts-and-Nofitication/blob/main/readme-images/Add%20Existing%20or%20New%20Application.png)
 
 #### 4.1 Applications List View
 
@@ -486,6 +486,7 @@ The Applications page is where you manage all your job applications, from adding
 
 #### 4.2 Add New Application
 
+![Add Existing or New Application](https://github.com/DheerajKumar97/Interview-Vault-BI-Powered-Interview-Tracker-with-ATS-Score-Calculation-Alerts-and-Nofitication/blob/main/readme-images/Add%20Existing%20or%20New%20Application.png)
 ![Add Application Form](./readme-images/add-application.png)
 
 **How to Add an Application:**
