@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,16 +46,12 @@
             gap: 10px;
         }
 
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 18px;
+        .logo-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: white;
+            padding: 4px;
         }
 
         .header-subtitle {
@@ -239,12 +236,14 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Header -->
         <div class="header">
             <div class="header-title">
-                <div class="logo-icon">✓</div>
+                <img src="https://raw.githubusercontent.com/DheerajKumar97/Interview-Vault-BI-Powered-Interview-Tracker-with-ATS-Score-Calculation-Alerts-and-Nofitication/main/public/logo.png"
+                    alt="Interview Vault Logo" class="logo-img">
                 Interview Vault
             </div>
             <p class="header-subtitle">Login Alert</p>
@@ -283,26 +282,31 @@
 
             <!-- Confirmation Message -->
             <div class="confirmation-text">
-                ✓ <strong>Confirmed:</strong> This login was successful. If this wasn't you, secure your account immediately.
+                ✓ <strong>Confirmed:</strong> This login was successful. If this wasn't you, secure your account
+                immediately.
             </div>
 
             <!-- Security Alert -->
             <div class="security-section">
                 <div class="security-title">⚠️ Wasn't You?</div>
                 <p class="security-text">
-                    If you didn't log in to your account, your password may be compromised. Secure your account immediately by resetting your password.
+                    If you didn't log in to your account, your password may be compromised. Secure your account
+                    immediately by resetting your password.
                 </p>
                 <a href="{{resetPasswordURL}}" class="action-button">Reset Password Now</a>
             </div>
 
             <!-- Info Text -->
             <p class="info-text">
-                We'll never ask for your password via email. If you receive suspicious emails requesting your credentials, please report them to <a href="mailto:interviewvault.2026@gmail.com" style="color: #667eea; text-decoration: none;">interviewvault.2026@gmail.com</a>
+                We'll never ask for your password via email. If you receive suspicious emails requesting your
+                credentials, please report them to <a href="mailto:interviewvault.2026@gmail.com"
+                    style="color: #667eea; text-decoration: none;">interviewvault.2026@gmail.com</a>
             </p>
 
             <!-- Quick Links Info -->
             <p class="info-text" style="text-align: center; color: #999; font-size: 12px;">
-                For your security, we log all login activities. This helps us protect your account from unauthorized access.
+                For your security, we log all login activities. This helps us protect your account from unauthorized
+                access.
             </p>
         </div>
 
@@ -313,8 +317,8 @@
             </p>
 
             <p class="footer-text">
-                <a href="{{supportURL}}" class="footer-link">Need Help?</a> • 
-                <a href="{{settingsURL}}" class="footer-link">Account Settings</a> • 
+                <a href="{{supportURL}}" class="footer-link">Need Help?</a> •
+                <a href="{{settingsURL}}" class="footer-link">Account Settings</a> •
                 <a href="{{privacyURL}}" class="footer-link">Privacy Policy</a>
             </p>
 
@@ -324,4 +328,5 @@
         </div>
     </div>
 </body>
+
 </html>
