@@ -62,6 +62,9 @@
 
 ### 📊 Advanced Features
 - 📈 **ATS Score Calculation** - Check resume compatibility
+
+![Dashboard Charts](./readme-images/check-ats-score.png)
+
 - 🎨 **Custom Themes** - Light/Dark mode support
 - 📅 **Calendar Integration** - Interview scheduling
 - 🔔 **Real-time Notifications** - Instant updates
@@ -375,7 +378,7 @@ The dashboard displays 6 main KPI cards at the top:
 
 #### 3.2 Dashboard Charts & Analytics
 
-![Dashboard Charts](./readme-images/check-ats-score.png)
+![Dashboard Overview](./readme-images/view-dashboard.png)
 
 **1. Application Status Distribution (Donut Chart)**
 - Visual breakdown of applications by status
