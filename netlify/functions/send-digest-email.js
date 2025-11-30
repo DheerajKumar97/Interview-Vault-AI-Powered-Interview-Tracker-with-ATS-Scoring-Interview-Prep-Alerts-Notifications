@@ -49,6 +49,8 @@ export const handler = async (event, context) => {
 
         if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
             console.error('❌ Missing SMTP credentials');
+            console.error('SMTP_USER:', process.env.SMTP_USER ? 'SET' : 'NOT SET');
+            console.error('SMTP_PASS:', process.env.SMTP_PASS ? 'SET' : 'NOT SET');
             return {
                 statusCode: 500,
                 headers,
@@ -57,6 +59,7 @@ export const handler = async (event, context) => {
         }
 
         console.log('📧 Sending Email Digest to:', email);
+        console.log('📋 Frequency:', frequency);
 
         const frequencyLabels = {
             'daily': 'Daily',
@@ -82,6 +85,8 @@ export const handler = async (event, context) => {
             });
         }
 
+        console.log('📎 Attachments count:', attachments.length);
+
         const mailOptions = {
             from: process.env.SMTP_EMAIL || 'interviewvault2026@gmail.com',
             to: email,
@@ -106,11 +111,6 @@ export const handler = async (event, context) => {
                 .data-table td { padding: 12px 15px; border-bottom: 1px solid #E9D5FF; color: #374151; font-size: 13px; }
                 .data-table tr:hover { background-color: #FAF5FF; }
                 .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-                .status-screening { background: #DBEAFE; color: #1E40AF; }
-                .status-shortlisted { background: #F3E8FF; color: #6D28D9; }
-                .status-interview { background: #E0E7FF; color: #4338CA; }
-                .status-selected { background: #D1FAE5; color: #065F46; }
-                .status-ghosted { background: #FEE2E2; color: #991B1B; }
                 .footer { background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%); padding: 30px; text-align: center; font-size: 13px; color: #6B7280; border-top: 3px solid #8B5CF6; }
                 .btn { display: inline-block; background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; margin: 25px 0; font-weight: 600; box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3); }
                 h1 { margin: 0; font-size: 28px; font-weight: 800; }
@@ -196,10 +196,15 @@ export const handler = async (event, context) => {
         };
 
         // Send email
+        console.log('🔧 Creating email transporter...');
         const transporter = createTransporter();
+
+        console.log('📤 Sending email via nodemailer...');
         const info = await transporter.sendMail(mailOptions);
 
-        console.log('✅ Email Digest sent:', info.messageId);
+        console.log('✅ Email Digest sent successfully!');
+        console.log('📬 Message ID:', info.messageId);
+
         return {
             statusCode: 200,
             headers,
@@ -210,13 +215,21 @@ export const handler = async (event, context) => {
             })
         };
     } catch (error) {
-        console.error('❌ Error sending email digest:', error.message);
+        console.error('❌ Error sending email digest:');
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+
         return {
             statusCode: 500,
             headers,
             body: JSON.stringify({
                 error: 'Failed to send email digest',
                 message: error.message,
+                errorName: error.name,
+                stack: error.stack,
+                details: error.toString()
             })
         };
     }
