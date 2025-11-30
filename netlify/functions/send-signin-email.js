@@ -59,10 +59,6 @@ const getSignInEmailHTML = (variables) => {
                 <span>${variables.ipAddress}</span>
             </div>
             
-            <p style="margin-top: 30px;">
-                <a href="${variables.resetPasswordURL}" class="btn">Reset Password</a>
-            </p>
-            
             <p>Questions? Contact us at support@interviewvault.com</p>
         </div>
         <div class="footer">
