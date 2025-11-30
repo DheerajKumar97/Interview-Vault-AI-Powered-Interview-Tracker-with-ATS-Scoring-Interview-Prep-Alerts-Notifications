@@ -216,7 +216,7 @@ npm run preview
 
 The home page is your gateway to Interview Vault. It provides an overview of the platform's features and easy navigation to get started.
 
-![Home Page](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764483105764.png)
+![Home Page](./docs/images/home_page.png)
 
 #### Features on Home Page:
 
@@ -257,7 +257,7 @@ Interview Vault provides a secure authentication system with email verification 
 
 #### 2.1 Sign Up Page
 
-![Sign Up Page](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764483205025.png)
+![Sign Up Page](./docs/images/signup_page.png)
 
 **How to Create an Account:**
 
@@ -298,7 +298,7 @@ Interview Vault provides a secure authentication system with email verification 
 
 #### 2.2 Sign In Page
 
-![Sign In Page](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/login_page_1764482733564.png)
+![Sign In Page](./docs/images/login_page.png)
 
 **How to Log In:**
 
@@ -338,7 +338,7 @@ Interview Vault provides a secure authentication system with email verification 
 
 The Business Intelligence Dashboard is the heart of Interview Vault, providing comprehensive analytics and insights into your interview journey.
 
-![Dashboard Overview](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764485697878.png)
+![Dashboard Overview](./docs/images/dashboard_overview.png)
 
 #### 3.1 Dashboard Overview
 
@@ -375,7 +375,7 @@ The dashboard displays 6 main KPI cards at the top:
 
 #### 3.2 Dashboard Charts & Analytics
 
-![Dashboard Charts](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764486462195.png)
+![Dashboard Charts](./docs/images/dashboard_charts.png)
 
 **1. Application Status Distribution (Donut Chart)**
 - Visual breakdown of applications by status
@@ -451,7 +451,7 @@ The dashboard displays 6 main KPI cards at the top:
 
 The Applications page is where you manage all your job applications, from adding new ones to tracking their progress.
 
-![Applications Page](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764486909514.png)
+![Applications Page](./docs/images/applications_page.png)
 
 #### 4.1 Applications List View
 
@@ -483,7 +483,7 @@ The Applications page is where you manage all your job applications, from adding
 
 #### 4.2 Add New Application
 
-![Add Application Form](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764487156265.png)
+![Add Application Form](./docs/images/add_application.png)
 
 **How to Add an Application:**
 
@@ -529,7 +529,7 @@ The Applications page is where you manage all your job applications, from adding
 
 #### 4.3 Application Detail View
 
-![Application Details](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764487337108.png)
+![Application Details](./docs/images/application_detail.png)
 
 **Application Overview Section**:
 - Company logo and name
@@ -575,7 +575,7 @@ The Applications page is where you manage all your job applications, from adding
 
 #### 4.4 Add Events to Application
 
-![Add Event](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764487544893.png)
+![Add Event](./docs/images/add_event.png)
 
 **Event Types**:
 
@@ -625,7 +625,7 @@ The Applications page is where you manage all your job applications, from adding
 
 The Skill Analysis feature uses AI to compare your resume against job descriptions and provides personalized project suggestions.
 
-![Skill Analysis Page](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764487670108.png)
+![Skill Analysis Page](./docs/images/skill_analysis_page.png)
 
 #### 5.1 Upload Resume
 
@@ -663,7 +663,7 @@ The Skill Analysis feature uses AI to compare your resume against job descriptio
 
 #### 5.2 Skill Analysis Tab
 
-![Skill Analysis Results](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764487992681.png)
+![Skill Analysis Results](./docs/images/skill_analysis_results.png)
 
 **How Skill Analysis Works:**
 
@@ -721,7 +721,7 @@ The Skill Analysis feature uses AI to compare your resume against job descriptio
 
 #### 5.3 Project Suggestions Tab
 
-![Project Suggestions](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764488238997.png)
+![Project Suggestions](./docs/images/project_suggestions.png)
 
 **AI-Powered Project Suggestions:**
 
@@ -804,7 +804,7 @@ Bulk manage your applications using Excel files for easy data migration and back
 
 #### 6.1 Export Applications
 
-![Export Feature](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764485919214.png)
+![Export Feature](./docs/images/export_feature.png)
 
 **How to Export Your Data:**
 
@@ -1407,11 +1407,11 @@ If you find this project helpful, please consider giving it a ⭐ on GitHub!
 
 ### Desktop Views
 
-![Dashboard Desktop](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764485697878.png)
+![Dashboard Desktop](./docs/images/dashboard_overview.png)
 
-![Applications Desktop](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764486909514.png)
+![Applications Desktop](./docs/images/applications_page.png)
 
-![Skill Analysis Desktop](C:/Users/Dheeraj%20Kumar%20K/.gemini/antigravity/brain/dccc3a2f-d663-4e7f-87df-a39c451ae1b0/uploaded_image_1764487992681.png)
+![Skill Analysis Desktop](./docs/images/skill_analysis_results.png)
 
 ---
 
