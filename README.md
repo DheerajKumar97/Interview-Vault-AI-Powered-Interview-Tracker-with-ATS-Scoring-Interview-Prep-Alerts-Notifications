@@ -579,7 +579,7 @@ The Applications page is where you manage all your job applications, from adding
 
 #### 4.4 Add Events to Application
 
-![Add Event](./readme-images/add-application.png)
+![Add or Edit Event Type](https://github.com/DheerajKumar97/Interview-Vault-BI-Powered-Interview-Tracker-with-ATS-Score-Calculation-Alerts-and-Nofitication/blob/main/readme-images/Add%20or%20Edit%20Event%20Type.png)
 
 **Event Types**:
 
