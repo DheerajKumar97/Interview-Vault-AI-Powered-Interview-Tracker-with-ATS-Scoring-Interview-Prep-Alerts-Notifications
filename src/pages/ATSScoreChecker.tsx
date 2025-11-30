@@ -11,6 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { FuzzyLogicMatcher } from "@/utils/fuzzyMatcher";
 import { CircularScore } from "@/components/CircularScore";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 
 interface Application {
     id: string;
@@ -35,7 +36,6 @@ const ATSScoreChecker = () => {
     const [resumeLoadedAt, setResumeLoadedAt] = useState<Date | null>(null);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>('desc');
 
-
     useEffect(() => {
         fetchApplications();
         fetchLatestResume();
@@ -45,12 +45,9 @@ const ATSScoreChecker = () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                console.log("No user found");
                 setLoading(false);
                 return;
             }
-
-            console.log("Fetching applications for user:", user.id);
 
             const { data, error } = await supabase
                 .from("applications")
@@ -71,13 +68,9 @@ const ATSScoreChecker = () => {
 
             if (error) throw error;
 
-            // Cast data to Application[] to avoid type errors until types are regenerated
             const typedData = (data as any) as Application[];
-
-            console.log("Fetched applications:", typedData);
             setApplications(typedData || []);
 
-            // Initialize scores from DB
             if (typedData) {
                 const initialScores: Record<string, string> = {};
                 typedData.forEach(app => {
@@ -126,33 +119,23 @@ const ATSScoreChecker = () => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validate file type
         if (file.type !== 'application/pdf') {
             toast.error(t("Please upload a PDF file"));
-            e.target.value = ''; // Reset input
+            e.target.value = '';
             return;
         }
 
         try {
             toast.info(t("Extracting text from PDF..."));
 
-            // Import PDF.js dynamically
             const pdfjsLib = await import('pdfjs-dist');
-
-            // Import worker using Vite's ?url suffix for correct loading
-            // Using legacy build for compatibility
             const pdfWorker = await import('pdfjs-dist/legacy/build/pdf.worker.min.mjs?url');
             pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker.default;
 
-            // Read file as ArrayBuffer
             const arrayBuffer = await file.arrayBuffer();
-
-            // Load PDF document
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
             let fullText = '';
-
-            // Extract text from each page
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
@@ -174,32 +157,24 @@ const ATSScoreChecker = () => {
                 return;
             }
 
-            // Get the session token for authentication
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
                 toast.error(t("Authentication required"));
                 return;
             }
 
-            // Check if a resume already exists for this user
             const { data: existingResumes } = await supabase
                 .from("resumes")
                 .select("id")
                 .eq("user_id", user.id)
-                .order("created_at", { ascending: false }) // Ensure we get the latest one
+                .order("created_at", { ascending: false })
                 .limit(1);
 
             const existingResumeId = existingResumes?.[0]?.id;
-            console.log("Found existing resume ID:", existingResumeId);
-            console.log("Extracted text length:", fullText.length);
-
-            // Use fetch API directly to bypass TypeScript type issues
             const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
             let response;
 
             if (existingResumeId) {
-                console.log("Updating existing resume...");
-                // Update existing resume
                 response = await fetch(`${supabaseUrl}/rest/v1/resumes?id=eq.${existingResumeId}`, {
                     method: 'PATCH',
                     headers: {
@@ -210,12 +185,10 @@ const ATSScoreChecker = () => {
                     },
                     body: JSON.stringify({
                         resume_text: fullText.trim(),
-                        created_at: new Date().toISOString() // Update timestamp
+                        created_at: new Date().toISOString()
                     })
                 });
             } else {
-                console.log("Creating new resume...");
-                // Insert new resume
                 response = await fetch(`${supabaseUrl}/rest/v1/resumes`, {
                     method: 'POST',
                     headers: {
@@ -241,11 +214,80 @@ const ATSScoreChecker = () => {
             setResumeText(fullText.trim());
             setResumeLoadedAt(new Date());
             toast.success(t("Resume uploaded successfully!"));
-            e.target.value = ''; // Reset input
+            e.target.value = '';
         } catch (error: any) {
             console.error("Error processing PDF:", error);
             toast.error(t("Failed to upload resume"));
             e.target.value = '';
+        }
+    };
+
+    const handleCalculateScores = async () => {
+        if (!resumeText) {
+            toast.error(t("Please upload a resume first"));
+            return;
+        }
+
+        setCalculating(true);
+
+        try {
+            toast.info(t("Calculating scores..."));
+
+            // Add artificial delay for better UX (as requested previously)
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            const matcher = new FuzzyLogicMatcher();
+            const newScores: Record<string, string> = {};
+
+            for (const app of applications) {
+                if (!app.job_description) {
+                    newScores[app.id] = "No JD";
+                    continue;
+                }
+
+                try {
+                    const result = matcher.calculateScore(resumeText, app.job_description);
+                    newScores[app.id] = Math.round(result.finalScore).toString();
+                } catch (error) {
+                    console.error(`Error calculating score for ${app.id}:`, error);
+                    newScores[app.id] = "Error";
+                }
+            }
+
+            setAtsScores(newScores);
+
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            for (const [appId, score] of Object.entries(newScores)) {
+                if (score === "No JD" || score === "Error") continue;
+
+                try {
+                    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                    await fetch(`${supabaseUrl}/rest/v1/applications?id=eq.${appId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                            'Authorization': `Bearer ${session.access_token}`,
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify({ ats_score: score })
+                    });
+                } catch (error) {
+                    console.error(`Error updating score for ${appId}:`, error);
+                }
+            }
+
+            toast.success(t("ATS scores calculated successfully!"));
+        } catch (error: any) {
+            console.error("Error calculating scores:", error);
+            toast.error(t("Failed to calculate scores"));
+        } finally {
+            setCalculating(false);
         }
     };
 
@@ -267,11 +309,7 @@ const ATSScoreChecker = () => {
     };
 
     const handleSort = () => {
-        if (sortOrder === null || sortOrder === 'desc') {
-            setSortOrder('asc');
-        } else {
-            setSortOrder('desc');
-        }
+        setSortOrder(current => current === 'asc' ? 'desc' : 'asc');
     };
 
     const getSortedApplications = () => {
@@ -288,116 +326,14 @@ const ATSScoreChecker = () => {
         });
     };
 
-    const handleCalculateScores = async () => {
-        if (!resumeText) {
-            toast.error(t("Please upload a resume first"));
-            return;
-        }
-
-        setCalculating(true);
-
-        try {
-            toast.info(t("Calculating scores..."));
-
-            // Add 25-second delay as requested
-            await new Promise(resolve => setTimeout(resolve, 25000));
-
-            const matcher = new FuzzyLogicMatcher();
-            const newScores: Record<string, string> = {};
-
-            // Process all applications instantly (no API calls, no delays needed)
-            for (const app of applications) {
-                if (!app.job_description) {
-                    newScores[app.id] = "No JD";
-                    continue;
-                }
-
-                try {
-                    const result = matcher.calculateScore(resumeText, app.job_description);
-                    newScores[app.id] = result.finalScore.toFixed(2);
-                } catch (error) {
-                    console.error(`Error calculating score for ${app.id}:`, error);
-                    newScores[app.id] = "Error";
-                }
-            }
-
-            // Update state with all scores
-            setAtsScores(newScores);
-
-            // Update database with all scores
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                toast.error(t("Authentication required"));
-                return;
-            }
-
-            // Get the session token for authentication
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                toast.error(t("Authentication required"));
-                return;
-            }
-
-            // Update each application's ATS score in the database
-            for (const [appId, score] of Object.entries(newScores)) {
-                try {
-                    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-                    const response = await fetch(`${supabaseUrl}/rest/v1/applications?id=eq.${appId}`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-                            'Authorization': `Bearer ${session.access_token}`,
-                            'Prefer': 'return=minimal'
-                        },
-                        body: JSON.stringify({
-                            ats_score: score
-                        })
-                    });
-
-                    if (!response.ok) {
-                        console.error(`Failed to update score for ${appId}`);
-                    }
-                } catch (error) {
-                    console.error(`Error updating score for ${appId}:`, error);
-                }
-            }
-
-            toast.success(t("ATS scores calculated successfully!"));
-        } catch (error: any) {
-            console.error("Error calculating scores:", error);
-            toast.error(t("Failed to calculate scores"));
-        } finally {
-            setCalculating(false);
-        }
-    };
-
     return (
-        <div className="min-h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-white to-blue-50">
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-2xl"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.08),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(168,85,247,0.08),transparent_50%)]"></div>
-
-            {/* Loading Overlay with Blur */}
-            {calculating && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-md">
-                    <div className="bg-white/90 rounded-2xl shadow-2xl p-8 flex flex-col items-center space-y-4">
-                        <div className="relative">
-                            {/* Animated Spinner */}
-                            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                        </div>
-                        <div className="text-center">
-                            <h3 className="text-lg font-semibold text-gray-900">Calculating ATS Scores</h3>
-                            <p className="text-sm text-gray-500 mt-1">Analyzing your resume against job descriptions...</p>
-                        </div>
-                    </div>
-                </div>
-            )}
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <LoadingOverlay isLoading={calculating} message="Calculating ATS Scores..." />
+            <div className="p-4">
+                <Header />
+            </div>
 
             <div className="relative container mx-auto px-4 pb-8 pt-4">
-                <div className="mb-6">
-                    <Header />
-                </div>
-
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-2 flex-wrap">
                         <Input

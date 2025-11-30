@@ -10,7 +10,10 @@ import {
   BarChart3,
   ArrowRight,
   Briefcase,
-  CheckCircle2
+  CheckCircle2,
+  Lightbulb,
+  FileSearch,
+  MessageSquare
 } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 
@@ -87,7 +90,7 @@ const Home = () => {
               {t("Track, manage, and visualize your entire interview journey across top companies with smart analytics, automated email alerts, and notifications.")}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 justify-center items-center pt-4">
               {user ? (
                 <>
                   <Button
@@ -106,6 +109,33 @@ const Home = () => {
                   >
                     <BarChart3 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                     {t("View Dashboard")}
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={() => navigate("/skill-analysis?tab=skills")}
+                    className="bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 text-sm sm:text-base lg:text-lg px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6"
+                  >
+                    <FileSearch className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    {t("Match Your Skills")}
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={() => navigate("/skill-analysis?tab=projects")}
+                    className="bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 text-sm sm:text-base lg:text-lg px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6"
+                  >
+                    <Lightbulb className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    {t("Generate Project Ideas")}
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={() => navigate("/interview-preparation")}
+                    className="bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 text-sm sm:text-base lg:text-lg px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6"
+                  >
+                    <MessageSquare className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    {t("Prepare for Interview")}
                   </Button>
                 </>
               ) : (

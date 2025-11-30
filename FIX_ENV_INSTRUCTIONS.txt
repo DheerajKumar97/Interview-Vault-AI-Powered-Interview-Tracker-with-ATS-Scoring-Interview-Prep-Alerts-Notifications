@@ -1,0 +1,17 @@
+// Instructions to fix your .env file
+// 
+// Open your .env file and update the GEMINI_API_KEY line to this format:
+// 
+// GEMINI_API_KEY=["AIzaSyCRrFFJNzv6B0QkOhqnoiDkRXGTtgSh-gw","AIzaSyD4hc2zkzrTU79fsllO8GePsTVGRi4yuk8","AIzaSyBDaRL0fZFBI_Sgqzx9xn96DSVbj5zsJEM","AIzaSyBvPRPVJmLLKRgvXWZPJyH_aBFgOLmqDRc","AIzaSyBPKUiEyLzKAoAhKNBcvGAJPTQpPVwbQsE","AIzaSyBkQlZhPRMNOPQRSTUVWXYZ1234567890","AIzaSyC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz","AIzaSyD9876543210ZYXWVUTSRQPONMLKJIHGFEDCBAzyxwvutsrqponmlkjihgfedcba","AIzaSyEABCDEF1234567890GHIJKLMNOPQRSTUVWXYZ","AIzaSyF0987654321ZYXWVUTSRQPONMLKJIHGFEDCBA"]
+//
+// Make sure:
+// 1. It's a valid JSON array with square brackets []
+// 2. Each key is in double quotes ""
+// 3. Keys are separated by commas
+// 4. NO spaces after commas
+// 5. All on ONE line
+//
+// Example with 3 keys:
+// GEMINI_API_KEY=["key1","key2","key3"]
+//
+// After updating, restart your server with: node run_script.js

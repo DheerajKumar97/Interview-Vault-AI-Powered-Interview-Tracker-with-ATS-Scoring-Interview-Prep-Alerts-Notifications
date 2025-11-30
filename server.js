@@ -72,7 +72,7 @@ app.post('/api/send-signin-email', async (req, res) => {
         <body>
             <div class="container">
                 <div class="header">
-                    <img src="https://raw.githubusercontent.com/DheerajKumar97/interview-compass/main/public/logo.png" alt="Interview Vault" class="logo">
+                    <img src="https://raw.githubusercontent.com/DheerajKumar97/Interview-Vault-BI-Powered-Interview-Tracker-with-ATS-Score-Calculation-Alerts-and-Nofitication/main/public/logo.png" alt="Interview Vault" class="logo">
                     <h1>New Login Detected</h1>
                 </div>
                 <div class="content">
@@ -176,7 +176,7 @@ app.post('/api/send-signup-email', async (req, res) => {
         <body>
             <div class="container">
                 <div class="header">
-                    <img src="https://raw.githubusercontent.com/DheerajKumar97/interview-compass/main/public/logo.png" alt="Interview Vault" class="logo">
+                    <img src="https://raw.githubusercontent.com/DheerajKumar97/Interview-Vault-BI-Powered-Interview-Tracker-with-ATS-Score-Calculation-Alerts-and-Nofitication/main/public/logo.png" alt="Interview Vault" class="logo">
                     <h1>Welcome Aboard! 🚀</h1>
                     <p style="margin-top: 10px; opacity: 0.9;">Your dream job is just around the corner</p>
                 </div>
@@ -184,7 +184,7 @@ app.post('/api/send-signup-email', async (req, res) => {
                     <p class="welcome-text">Hi ${fullName || 'Future Achiever'},<br>Thank you for joining <strong>Interview Vault</strong>. We've built the ultimate tool to help you organize, track, and ace your job search.</p>
                     
                     <div style="text-align: center; margin: 40px 0;">
-                        <a href="https://interview-compass.netlify.app/applications" class="btn">Start Tracking Now</a>
+                        <a href="${process.env.VITE_APP_URL || 'http://localhost:8080'}" class="btn">Start Tracking Now</a>
                     </div>
 
                     <h3 style="text-align: center; color: #555;">Everything you need to succeed:</h3>
@@ -324,7 +324,7 @@ app.post('/api/send-digest-email', async (req, res) => {
         <body>
             <div class="container">
                 <div class="header">
-                    <img src="https://raw.githubusercontent.com/DheerajKumar97/interview-compass/main/public/logo.png" alt="Interview Vault" class="logo">
+                    <img src="https://raw.githubusercontent.com/DheerajKumar97/Interview-Vault-BI-Powered-Interview-Tracker-with-ATS-Score-Calculation-Alerts-and-Nofitication/main/public/logo.png" alt="Interview Vault" class="logo">
                     <h1>📊 Your ${frequencyLabels[frequency]} Digest</h1>
                     <p style="margin-top: 10px; opacity: 0.95; font-size: 16px;">Application Tracking Summary</p>
                 </div>

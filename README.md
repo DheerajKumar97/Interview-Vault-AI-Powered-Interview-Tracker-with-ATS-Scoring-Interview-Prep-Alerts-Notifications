@@ -62,6 +62,9 @@
 
 ### 📊 Advanced Features
 - 📈 **ATS Score Calculation** - Check resume compatibility
+
+![Dashboard Charts](./readme-images/check-ats-score.png)
+
 - 🎨 **Custom Themes** - Light/Dark mode support
 - 📅 **Calendar Integration** - Interview scheduling
 - 🔔 **Real-time Notifications** - Instant updates
@@ -375,7 +378,7 @@ The dashboard displays 6 main KPI cards at the top:
 
 #### 3.2 Dashboard Charts & Analytics
 
-![Dashboard Charts](./readme-images/check-ats-score.png)
+![Dashboard Overview](./readme-images/view-dashboard.png)
 
 **1. Application Status Distribution (Donut Chart)**
 - Visual breakdown of applications by status
@@ -451,7 +454,7 @@ The dashboard displays 6 main KPI cards at the top:
 
 The Applications page is where you manage all your job applications, from adding new ones to tracking their progress.
 
-![Applications Page](./readme-images/view-dashboard.png)
+![Add Existing or New Application](./readme-images/add-existing-or-new-application.png)
 
 #### 4.1 Applications List View
 
@@ -483,6 +486,7 @@ The Applications page is where you manage all your job applications, from adding
 
 #### 4.2 Add New Application
 
+![Add Existing or New Application](./readme-images/add-existing-or-new-application.png)
 ![Add Application Form](./readme-images/add-application.png)
 
 **How to Add an Application:**
@@ -575,7 +579,7 @@ The Applications page is where you manage all your job applications, from adding
 
 #### 4.4 Add Events to Application
 
-![Add Event](./readme-images/add-application.png)
+![Add or Edit Event Type](https://github.com/DheerajKumar97/Interview-Vault-BI-Powered-Interview-Tracker-with-ATS-Score-Calculation-Alerts-and-Nofitication/blob/main/readme-images/Add%20or%20Edit%20Event%20Type.png)
 
 **Event Types**:
 
@@ -760,12 +764,325 @@ The Skill Analysis feature uses AI to compare your resume against job descriptio
 - 💡 **Practical**: Real-world project ideas
 - 🔄 **Regenerate**: Get new suggestions anytime
 
-**API Key Management**:
-- Default API key provided
-- If limit reached, enter your own key
-- Get free key from [Google AI Studio](https://aistudio.google.com/app/apikey)
-- Key saved for future use
-- Secure storage
+**What Makes These Suggestions Valuable:**
+- 🎯 **Targeted**: Directly addresses your skill gaps
+- 💼 **Interview-Ready**: Projects you can discuss confidently
+- 📈 **Career Growth**: Builds portfolio and demonstrates initiative
+- 🚀 **Practical**: Real-world applications, not toy projects
+- 🔄 **Regenerate**: Get fresh ideas anytime
+
+---
+
+#### 5.4 AI-Powered Interview Preparation
+
+**Generate Personalized Interview Questions:**
+
+Interview Vault uses Google's Gemini AI to generate comprehensive, role-specific interview questions based on your resume and the job description.
+
+**How It Works:**
+
+1. **Navigate to Interview Preparation**:
+   - Click "Prepare for Interview" button on Skill Analysis page
+   - Or access via `/interview-preparation` route
+
+2. **Select Company**:
+   - Choose from your applied companies
+   - Company must have a job description saved
+
+3. **Click "Generate Questions" Button**:
+   - AI analyzes both your resume and the job description
+   - Generates 15-20 tailored interview questions
+   - Loading overlay shows progress
+
+4. **Review Generated Questions**:
+   - Questions are categorized by type:
+     - Technical Skills Questions
+     - Behavioral Questions
+     - Scenario-Based Questions
+     - Role-Specific Questions
+   - Each question includes:
+     - **Question**: The interview question
+     - **Detailed Answer**: VERY DETAILED answer (150-200 words)
+     - **Real-World Example**: Scenario from your resume/experience
+     - **Key Points**: Important aspects to highlight
+
+**Interview Preparation Features:**
+- 📝 **Comprehensive Answers**: Detailed, essay-like responses (not brief)
+- 🎯 **Resume-Specific**: Answers reference YOUR actual projects and experience
+- 💡 **Real Examples**: Includes scenarios you can relate to
+- 🔄 **Regenerate**: Get new questions for practice
+- 📋 **Export**: Save questions as PDF for offline review
+
+**Example Generated Question:**
+```
+Q: How would you optimize database queries in a high-traffic application?
+
+A: [DETAILED 150-200 word answer explaining query optimization techniques, 
+indexing strategies, caching mechanisms, connection pooling, and real-world 
+examples from your experience. Includes specific metrics and outcomes.]
+
+Real-World Example: [Scenario from your resume showing how you implemented 
+these optimizations in a previous project, with quantifiable results.]
+
+Key Points to Highlight:
+- Understanding of database indexing
+- Experience with query profiling tools
+- Knowledge of caching strategies
+- Ability to measure and improve performance
+```
+
+---
+
+#### 5.5 AI-Powered Project Suggestions
+
+**Generate Portfolio-Worthy Project Ideas:**
+
+The Project Suggestions feature uses AI to recommend projects that will help you bridge skill gaps and impress interviewers.
+
+**How to Get Project Suggestions:**
+
+1. **Navigate to Skill Analysis Page**:
+   - Click "Skill Analysis" in header
+   - Or go to `/skill-analysis`
+
+2. **Switch to "Project Suggestions" Tab**:
+   - Located next to "Skill Analysis" tab
+   - Purple-themed interface
+
+3. **Select Company**:
+   - Choose from dropdown
+   - Company must have job description
+
+4. **Click "Get Suggestions" Button**:
+   - Purple button at top-right
+   - AI analyzes job requirements
+   - Generates 3-5 project ideas
+
+5. **Review Detailed Project Plans**:
+   - Each project includes:
+     - **Project Title**: Clear, descriptive name
+     - **Project Description**: COMPREHENSIVE 150-200 word essay explaining:
+       - What the project does
+       - Architecture and data flow
+       - Specific problems it solves
+       - Business value and impact
+       - Step-by-step implementation approach
+     - **Key Technologies/Skills Used**: Complete tech stack
+     - **Why It's Impressive for This Role**: Detailed 100-150 word justification explaining:
+       - How it demonstrates required skills
+       - Why it proves you're a strong fit
+       - Specific features that align with job requirements
+       - Impact on your candidacy
+
+**Project Suggestion Quality:**
+- 📚 **Maximum Detail**: 150-200 words per description (not brief summaries)
+- 🏗️ **Architecture Focus**: Explains system design and data flow
+- 💡 **Problem-Solving**: Highlights challenges and solutions
+- 🎯 **Role-Specific**: Tailored to exact job requirements
+- 📈 **Career Impact**: Shows how project advances your profile
+
+**Example Project Suggestion:**
+```
+1. Project Title: Real-Time Analytics Dashboard for E-Commerce Platform
+
+Project Description: Develop a comprehensive real-time analytics dashboard 
+that processes and visualizes customer behavior data for an e-commerce 
+platform. The system uses a microservices architecture with event-driven 
+design, where user interactions are captured via event streams (Apache Kafka), 
+processed through a data pipeline (Apache Spark), and stored in a time-series 
+database (InfluxDB). The frontend dashboard (React + D3.js) displays live 
+metrics including active users, conversion rates, cart abandonment, and 
+revenue trends with sub-second latency. The system handles 10,000+ events 
+per second, implements real-time alerting for anomalies, and provides 
+predictive analytics using machine learning models. This project solves 
+the critical business problem of delayed insights by enabling instant 
+decision-making based on current customer behavior patterns.
+
+Key Technologies/Skills Used: React, TypeScript, Apache Kafka, Apache Spark, 
+InfluxDB, Redis, Docker, Kubernetes, D3.js, WebSockets, Python, TensorFlow, 
+AWS (EC2, S3, Lambda), Grafana
+
+Why it's impressive for this role: This project directly demonstrates your 
+ability to build scalable, real-time systems—a core requirement for the 
+Senior Software Engineer position. It showcases expertise in distributed 
+systems architecture, event-driven design, and data engineering, which are 
+explicitly mentioned in the job description. The project proves you can 
+handle high-throughput data processing (10K+ events/sec), implement 
+microservices patterns, and create responsive user interfaces. Most 
+importantly, it shows business acumen by solving a real revenue-impacting 
+problem, making you a candidate who understands both technical excellence 
+and business value.
+```
+
+---
+
+#### 5.6 Gemini API Key Management & Fallback Mechanism
+
+Interview Vault implements a **robust 10-key fallback system** to ensure uninterrupted AI service for all users.
+
+**How the Fallback System Works:**
+
+**1. Multiple API Keys (10-Key Pool)**:
+- Interview Vault maintains a pool of 10 Google Gemini API keys
+- Keys are stored in `.env` file as a JSON array:
+  ```env
+  GEMINI_API_KEY=["key1", "key2", "key3", ..., "key10"]
+  ```
+- System automatically rotates through keys when limits are reached
+
+**2. Automatic Key Rotation**:
+- When you request AI features (Project Suggestions or Interview Questions):
+  1. System tries **API Key #1**
+  2. If Key #1 hits rate limit or quota → tries **API Key #2**
+  3. If Key #2 fails → tries **API Key #3**
+  4. Continues through all 10 keys automatically
+  5. No user intervention needed during rotation
+
+**3. User Prompt for Custom Key**:
+- If **all 10 default keys are exhausted**:
+  - System displays a friendly prompt:
+    ```
+    ⚠️ Enter Gemini API Key
+    
+    The default API keys have hit their limits. Please enter your 
+    own free API key from Google AI Studio to continue.
+    
+    [Get Free API Key] → https://aistudio.google.com/app/apikey
+    
+    [Input field for API key]
+    [Save Key] button
+    ```
+  - User can get a **free API key** from Google AI Studio
+  - Key is saved to backend `.env` file automatically
+  - Future requests use the saved custom key
+
+**4. Key Persistence**:
+- Once you provide a custom key, it's saved permanently
+- System adds your key to the pool
+- You won't be prompted again unless your key also hits limits
+
+**Benefits of This System:**
+- ✅ **99.9% Uptime**: 10 keys provide redundancy
+- ✅ **Zero Interruption**: Automatic failover between keys
+- ✅ **User-Friendly**: Only prompts when absolutely necessary
+- ✅ **Free for Users**: Default keys cover most usage
+- ✅ **Scalable**: Easy to add more keys to the pool
+
+**API Key Limits (Google Gemini Free Tier)**:
+- **Rate Limit**: 15 requests per minute per key
+- **Daily Quota**: 1,500 requests per day per key
+- **With 10 Keys**: Effective capacity of 15,000 requests/day
+
+**How to Get Your Own API Key (If Needed)**:
+
+1. **Visit Google AI Studio**:
+   - Go to [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+   - Sign in with your Google account
+
+2. **Create API Key**:
+   - Click "Create API Key" button
+   - Select "Create API key in new project"
+   - Copy the generated key (starts with `AIzaSy...`)
+
+3. **Enter in Interview Vault**:
+   - Paste key in the prompt when requested
+   - Click "Save Key"
+   - System validates and saves the key
+
+4. **Key Security**:
+   - Keys are stored securely in backend `.env`
+   - Never exposed in frontend code
+   - Encrypted in database
+   - Only used for your requests
+
+**Monitoring Key Usage**:
+- System logs show which key is being used
+- Console displays: `🔑 Trying API key 1/10...`
+- Success message: `✅ Success with API key 1/10`
+- Failure message: `❌ API key 1/10 failed, trying next...`
+
+**Best Practices**:
+- 🔑 Keep your API key private (don't share)
+- 🔄 Regenerate key if compromised
+- 📊 Monitor usage in Google AI Studio dashboard
+- ⚡ Free tier is sufficient for personal use
+
+---
+
+### 6. Interview Preparation (Detailed)
+
+**AI-Generated Interview Questions with Comprehensive Answers:**
+
+The Interview Preparation feature is designed to help you ace your interviews by providing:
+- Role-specific questions tailored to the job description
+- Detailed, essay-like answers (150-200 words each)
+- Real-world examples from your resume
+- Key points to emphasize during the interview
+
+**Question Categories:**
+
+1. **Technical Skills Questions**:
+   - Programming languages and frameworks
+   - System design and architecture
+   - Database and data structures
+   - Algorithms and problem-solving
+
+2. **Behavioral Questions**:
+   - Leadership and teamwork
+   - Conflict resolution
+   - Time management
+   - Communication skills
+
+3. **Scenario-Based Questions**:
+   - Real-world problem scenarios
+   - Decision-making situations
+   - Crisis management
+   - Project challenges
+
+4. **Role-Specific Questions**:
+   - Based on exact job requirements
+   - Company-specific technologies
+   - Industry best practices
+   - Domain knowledge
+
+**Answer Quality:**
+- 📝 **Comprehensive**: 150-200 words per answer (not brief)
+- 🎯 **Personalized**: References YOUR resume and experience
+- 💡 **Actionable**: Includes specific examples and metrics
+- 🔄 **STAR Format**: Situation, Task, Action, Result
+- 📊 **Quantified**: Includes numbers and measurable outcomes
+
+**How to Use Interview Preparation:**
+
+1. **Generate Questions**:
+   - Select company from dropdown
+   - Click "Generate Questions"
+   - Wait for AI to analyze (10-15 seconds)
+
+2. **Review and Practice**:
+   - Read each question carefully
+   - Study the detailed answer
+   - Note the real-world example
+   - Memorize key points
+
+3. **Customize Answers**:
+   - Adapt examples to your experience
+   - Add specific metrics from your projects
+   - Practice delivering answers out loud
+
+4. **Export for Offline Study**:
+   - Click "Export PDF" button
+   - Save to your device
+   - Review before interview
+
+**Interview Preparation Tips:**
+- 🎯 Practice answers out loud
+- 📝 Write down your own examples
+- 🔄 Regenerate for more practice questions
+- 📊 Track which questions you've mastered
+- ⏰ Time yourself (2-3 minutes per answer)
+
+---
 
 **Example Project Suggestion**:
 ```

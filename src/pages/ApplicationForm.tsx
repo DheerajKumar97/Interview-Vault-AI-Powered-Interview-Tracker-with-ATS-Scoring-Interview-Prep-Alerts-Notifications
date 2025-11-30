@@ -141,6 +141,7 @@ const ApplicationForm = () => {
         if (formData.industry.trim()) companyUpdate.industry = formData.industry.trim();
         if (formData.location.trim()) companyUpdate.location = formData.location.trim();
         if (formData.website.trim()) companyUpdate.company_website = formData.website.trim();
+        if (formData.companySize.trim()) companyUpdate.company_size = formData.companySize.trim();
         if (formData.hrName.trim()) companyUpdate.hr_name = formData.hrName.trim();
         if (formData.hrPhone.trim()) companyUpdate.hr_phone = formData.hrPhone.trim();
         if (formData.hrLinkedin.trim()) companyUpdate.hr_linkedin = formData.hrLinkedin.trim();
@@ -381,6 +382,26 @@ const ApplicationForm = () => {
                         placeholder="LinkedIn URL"
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="companySize">Company Size *</Label>
+                    <Select
+                      value={formData.companySize}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, companySize: value })
+                      }
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select company size" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Large">Large</SelectItem>
+                        <SelectItem value="Mid">Mid</SelectItem>
+                        <SelectItem value="Small">Small</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </>
               ) : (

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Upload, ArrowLeft, FileText, Building2, Lightbulb, Loader2, Key } from "lucide-react";
+import { Upload, ArrowLeft, FileText, Building2, Lightbulb, Loader2, Key, MessageSquare } from "lucide-react";
 import Header from "@/components/Header";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 
 interface Application {
     id: string;
@@ -37,6 +38,7 @@ interface SkillAnalysisResult {
 const SkillAnalysis = () => {
     const navigate = useNavigate();
     const { t } = useLanguage();
+    const [searchParams] = useSearchParams();
     const [applications, setApplications] = useState<Application[]>([]);
     const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
     const [loading, setLoading] = useState(true);
@@ -56,15 +58,23 @@ const SkillAnalysis = () => {
         fetchApplications();
         fetchLatestResume();
 
-        // Load saved state from localStorage (to survive page reloads)
-        const savedSuggestions = localStorage.getItem('projectSuggestions');
-        const savedCompanyId = localStorage.getItem('selectedCompanyId');
-        const savedTab = localStorage.getItem('activeTab');
+        // Check URL parameter for tab selection (takes priority)
+        const tabParam = searchParams.get('tab');
+        if (tabParam === 'skills' || tabParam === 'skill-analysis') {
+            setActiveTab('skill-analysis');
+        } else if (tabParam === 'projects' || tabParam === 'project-suggestions') {
+            setActiveTab('project-suggestions');
+        } else {
+            // Load saved state from localStorage (to survive page reloads)
+            const savedSuggestions = localStorage.getItem('projectSuggestions');
+            const savedCompanyId = localStorage.getItem('selectedCompanyId');
+            const savedTab = localStorage.getItem('activeTab');
 
-        if (savedSuggestions) setProjectSuggestions(savedSuggestions);
-        if (savedCompanyId) setSelectedCompanyId(savedCompanyId);
-        if (savedTab) setActiveTab(savedTab);
-    }, []);
+            if (savedSuggestions) setProjectSuggestions(savedSuggestions);
+            if (savedCompanyId) setSelectedCompanyId(savedCompanyId);
+            if (savedTab) setActiveTab(savedTab);
+        }
+    }, [searchParams]);
 
     // Save state to localStorage whenever it changes
     useEffect(() => {
@@ -667,24 +677,14 @@ const SkillAnalysis = () => {
     };
 
     return (
-        <div className="min-h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-white to-blue-50">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
             <div className="absolute inset-0 bg-white/60 backdrop-blur-2xl"></div>
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.08),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(168,85,247,0.08),transparent_50%)]"></div>
 
-            {/* Loading Overlay */}
-            {analyzing && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-md">
-                    <div className="bg-white/90 rounded-2xl shadow-2xl p-8 flex flex-col items-center space-y-4">
-                        <div className="relative">
-                            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                        </div>
-                        <div className="text-center">
-                            <h3 className="text-lg font-semibold text-gray-900">Analyzing Skills</h3>
-                            <p className="text-sm text-gray-500 mt-1">Comparing resume with job requirements...</p>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <LoadingOverlay
+                isLoading={analyzing || generatingProjects}
+                message={analyzing ? "Analyzing Skills..." : "Generating Project Suggestions..."}
+            />
 
             <div className="relative container mx-auto px-4 pb-8 pt-4">
                 <div className="mb-6">
@@ -709,6 +709,10 @@ const SkillAnalysis = () => {
                         <Button variant="outline" onClick={() => document.getElementById("import-resume")?.click()} className="glass-card border-gray-200 bg-white/80">
                             <Upload className="h-4 w-4 mr-2" />
                             {t("Import Resume")}
+                        </Button>
+                        <Button onClick={() => navigate("/interview-preparation")} className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg hover:from-purple-700 hover:to-pink-700">
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            {t("Prepare for Interview")}
                         </Button>
                     </div>
 
@@ -806,93 +810,81 @@ const SkillAnalysis = () => {
                         </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="skill-analysis" className="mt-0">
-                        {/* Skill Analysis Results */}
-                        {!resumeText && (
-                            <Card className="glass-card border-gray-200 bg-white/90 shadow-lg p-6 mb-6">
-                                <p className="text-sm text-amber-600 flex items-center gap-2">
-                                    <FileText className="h-4 w-4" />
-                                    Please upload your resume first to perform skill analysis
-                                </p>
-                            </Card>
-                        )}
-
-                        {skillAnalysis ? (
+                    <TabsContent value="skill-analysis" className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {!selectedCompanyId ? (
+                            <div className="text-center py-12 bg-white/50 rounded-xl border-2 border-dashed border-gray-200">
+                                <Building2 className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                                <p className="text-gray-500 font-medium">Select a company to analyze skills</p>
+                            </div>
+                        ) : !skillAnalysis ? (
+                            <div className="text-center py-12 bg-white/50 rounded-xl border-2 border-dashed border-gray-200">
+                                <Loader2 className="h-12 w-12 text-blue-300 mx-auto mb-3 animate-spin" />
+                                <p className="text-gray-500 font-medium">Analyzing skills...</p>
+                            </div>
+                        ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {renderSkillSection(
-                                    "Existing Skills",
-                                    skillAnalysis.existingSkills,
-                                    "bg-green-600",
-                                    "border-green-500",
-                                    "text-green-700"
-                                )}
                                 {renderSkillSection(
                                     "Missing Skills",
                                     skillAnalysis.missingSkills,
-                                    "bg-red-600",
-                                    "border-red-500",
-                                    "text-red-700"
+                                    "bg-red-500",
+                                    "border-red-100",
+                                    "text-red-600"
+                                )}
+                                {renderSkillSection(
+                                    "Priority to Learn",
+                                    skillAnalysis.priorityMissingSkills,
+                                    "bg-orange-500",
+                                    "border-orange-100",
+                                    "text-orange-600"
+                                )}
+                                {renderSkillSection(
+                                    "Existing Skills",
+                                    skillAnalysis.existingSkills,
+                                    "bg-green-500",
+                                    "border-green-100",
+                                    "text-green-600"
                                 )}
                                 {renderSkillSection(
                                     "Extra Skills",
                                     skillAnalysis.extraSkills,
-                                    "bg-blue-600",
-                                    "border-blue-500",
-                                    "text-blue-700"
-                                )}
-                                {renderSkillSection(
-                                    "Priority Missing Skills",
-                                    skillAnalysis.priorityMissingSkills,
-                                    "bg-red-600",
-                                    "border-red-500",
-                                    "text-red-700"
+                                    "bg-blue-500",
+                                    "border-blue-100",
+                                    "text-blue-600"
                                 )}
                             </div>
-                        ) : (
-                            <Card className="glass-card border-gray-200 bg-white/90 shadow-lg p-12">
-                                <div className="text-center text-gray-500">
-                                    <Building2 className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                                    <h3 className="text-lg font-semibold mb-2">No Analysis Yet</h3>
-                                    <p className="text-sm">
-                                        {!resumeText
-                                            ? "Upload your resume and select a company to see skill analysis"
-                                            : "Select a company to analyze your skills against their job requirements"}
-                                    </p>
-                                </div>
-                            </Card>
                         )}
                     </TabsContent>
 
-                    <TabsContent value="project-suggestions" className="mt-0">
-                        {/* Project Suggestions UI */}
-                        {projectSuggestions ? (
-                            <Card className="glass-card border-gray-200 bg-white/90 shadow-lg p-8">
-                                <div className="prose prose-blue max-w-none">
-                                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
-                                        <div className="p-2 bg-purple-100 rounded-lg">
-                                            <Lightbulb className="h-6 w-6 text-purple-600" />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-2xl font-bold text-gray-900 m-0">Recommended Projects</h2>
-                                            <p className="text-gray-500 m-0">Tailored to help you land this role</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-6">
-                                        {renderProjectSuggestions(projectSuggestions)}
-                                    </div>
-                                </div>
-                            </Card>
+                    <TabsContent value="project-suggestions" className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {!projectSuggestions ? (
+                            <div className="text-center py-16 bg-white/50 rounded-xl border-2 border-dashed border-gray-200">
+                                <Lightbulb className="h-16 w-16 text-purple-200 mx-auto mb-4" />
+                                <h3 className="text-xl font-semibold text-gray-700 mb-2">No Project Suggestions Yet</h3>
+                                <p className="text-gray-500 max-w-md mx-auto mb-6">
+                                    Select a company and click "Get Suggestions" to generate tailored project ideas based on the job description.
+                                </p>
+                                <Button
+                                    onClick={generateProjectSuggestions}
+                                    disabled={!selectedCompanyId || generatingProjects}
+                                    className="bg-purple-600 hover:bg-purple-700 text-white shadow-md hover:shadow-lg transition-all"
+                                >
+                                    {generatingProjects ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Generating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Lightbulb className="mr-2 h-4 w-4" />
+                                            Get Suggestions
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
                         ) : (
-                            <Card className="glass-card border-gray-200 bg-white/90 shadow-lg p-12">
-                                <div className="text-center text-gray-500">
-                                    <Lightbulb className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                                    <h3 className="text-lg font-semibold mb-2">No Project Suggestions Yet</h3>
-                                    <p className="text-sm">
-                                        Select a company and click "Get Suggestions" to receive AI-powered project ideas.
-                                    </p>
-                                </div>
-                            </Card>
+                            <div className="space-y-6">
+                                {renderProjectSuggestions(projectSuggestions)}
+                            </div>
                         )}
                     </TabsContent>
                 </Tabs>
