@@ -133,7 +133,7 @@ export const handler = async (event, context) => {
     const variables = {
       fullName: fullName || 'User',
       email: email,
-      dashboardURL: `${process.env.FRONTEND_URL || 'https://interview-compass.netlify.app'}/applications`,
+      dashboardURL: `${(process.env.FRONTEND_URL || 'https://interview-compass.netlify.app').replace(/\/$/, '')}/applications`,
     };
 
     const htmlContent = getSignUpEmailHTML(variables);
