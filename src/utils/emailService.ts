@@ -1,18 +1,6 @@
 /**
- * Email Service Utility
- * Calls local backend server for email sending
- * Server runs on http://localhost:3001
  */
-
-// API base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
-/**
- * Send Sign Up (Welcome) Email
- * @param {string} email - User email
- * @param {string} fullName - User full name
- * @returns {Promise<{success: boolean, messageId?: string, error?: string}>}
- */
+import { API_BASE_URL } from '../config/api';
 export const sendSignUpEmail = async (email: string, fullName: string) => {
   try {
     console.log('📧 Sending Sign Up email to:', email);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from '../config/api';
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -475,7 +476,7 @@ const SkillAnalysis = () => {
 
             toast.info(t("Generating project suggestions..."));
 
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/generate-projects`, {
+            const response = await fetch(`${API_BASE_URL}/generate-projects`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

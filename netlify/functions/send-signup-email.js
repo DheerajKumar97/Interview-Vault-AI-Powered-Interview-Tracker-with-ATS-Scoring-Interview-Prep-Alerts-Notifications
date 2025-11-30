@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 
 // Create transporter with Gmail (using App Password)
 const createTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: process.env.SMTP_USER,
@@ -84,25 +84,48 @@ const getSignUpEmailHTML = (variables) => {
 };
 
 // Main handler
-export default async (req, res) => {
+export const handler = async (event, context) => {
   // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers,
+      body: ''
+    };
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      headers,
+      body: JSON.stringify({ error: 'Method not allowed' })
+    };
   }
 
   try {
-    const { email, fullName } = req.body;
+    const { email, fullName } = JSON.parse(event.body || '{}');
 
     if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Email is required' })
+      };
+    }
+
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error('❌ Missing SMTP credentials');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Server misconfiguration: Missing SMTP credentials' })
+      };
     }
 
     console.log('📧 Sending Sign Up email to:', email);
@@ -125,16 +148,24 @@ export default async (req, res) => {
     });
 
     console.log('✅ Sign Up email sent:', info.messageId);
-    return res.status(200).json({
-      success: true,
-      messageId: info.messageId,
-      message: 'Welcome email sent successfully',
-    });
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        messageId: info.messageId,
+        message: 'Welcome email sent successfully',
+      })
+    };
   } catch (error) {
     console.error('❌ Error sending email:', error.message);
-    return res.status(500).json({
-      error: 'Failed to send email',
-      message: error.message,
-    });
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        error: 'Failed to send email',
+        message: error.message,
+      })
+    };
   }
 };

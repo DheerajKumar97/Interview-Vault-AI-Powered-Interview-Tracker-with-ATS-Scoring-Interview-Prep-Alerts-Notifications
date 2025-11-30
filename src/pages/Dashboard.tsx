@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { useNavigate } from "react-router-dom";
 import dashboardBg from "@/assets/dashboard-bg.jpg";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KpiCard } from "@/components/KpiCard";
-
-import { MultiSelect } from "@/components/ui/multi-select";
+import { API_BASE_URL } from '../config/api';
 import { Button } from "@/components/ui/button";
 
 
@@ -379,7 +379,7 @@ const Dashboard = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/send-digest-email`, {
+      const response = await fetch(`${API_BASE_URL}/send-digest-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
