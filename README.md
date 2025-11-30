@@ -216,7 +216,7 @@ npm run preview
 
 The home page is your gateway to Interview Vault. It provides an overview of the platform's features and easy navigation to get started.
 
-![Home Page](./docs/images/home_page.png)
+![Home Page](./Readme Images/Home Page.png)
 
 #### Features on Home Page:
 
@@ -257,7 +257,7 @@ Interview Vault provides a secure authentication system with email verification 
 
 #### 2.1 Sign Up Page
 
-![Sign Up Page](./docs/images/signup_page.png)
+![Sign Up Page](./Readme Images/Sign Up Page.png)
 
 **How to Create an Account:**
 
@@ -298,7 +298,7 @@ Interview Vault provides a secure authentication system with email verification 
 
 #### 2.2 Sign In Page
 
-![Sign In Page](./docs/images/login_page.png)
+![Sign In Page](./Readme Images/Log In Page.png)
 
 **How to Log In:**
 
@@ -338,7 +338,7 @@ Interview Vault provides a secure authentication system with email verification 
 
 The Business Intelligence Dashboard is the heart of Interview Vault, providing comprehensive analytics and insights into your interview journey.
 
-![Dashboard Overview](./docs/images/dashboard_overview.png)
+![Dashboard Overview](./Readme Images/View Dashboard.png)
 
 #### 3.1 Dashboard Overview
 
@@ -375,7 +375,7 @@ The dashboard displays 6 main KPI cards at the top:
 
 #### 3.2 Dashboard Charts & Analytics
 
-![Dashboard Charts](./docs/images/dashboard_charts.png)
+![Dashboard Charts](./Readme Images/Check ATS Score.png)
 
 **1. Application Status Distribution (Donut Chart)**
 - Visual breakdown of applications by status
@@ -451,7 +451,7 @@ The dashboard displays 6 main KPI cards at the top:
 
 The Applications page is where you manage all your job applications, from adding new ones to tracking their progress.
 
-![Applications Page](./docs/images/applications_page.png)
+![Applications Page](./Readme Images/View Dashboard.png)
 
 #### 4.1 Applications List View
 
@@ -483,7 +483,7 @@ The Applications page is where you manage all your job applications, from adding
 
 #### 4.2 Add New Application
 
-![Add Application Form](./docs/images/add_application.png)
+![Add Application Form](./Readme Images/Add Application.png)
 
 **How to Add an Application:**
 
@@ -529,7 +529,7 @@ The Applications page is where you manage all your job applications, from adding
 
 #### 4.3 Application Detail View
 
-![Application Details](./docs/images/application_detail.png)
+![Application Details](./Readme Images/View Dashboard.png)
 
 **Application Overview Section**:
 - Company logo and name
@@ -575,7 +575,7 @@ The Applications page is where you manage all your job applications, from adding
 
 #### 4.4 Add Events to Application
 
-![Add Event](./docs/images/add_event.png)
+![Add Event](./Readme Images/Add Application.png)
 
 **Event Types**:
 
@@ -625,7 +625,7 @@ The Applications page is where you manage all your job applications, from adding
 
 The Skill Analysis feature uses AI to compare your resume against job descriptions and provides personalized project suggestions.
 
-![Skill Analysis Page](./docs/images/skill_analysis_page.png)
+![Skill Analysis Page](./Readme Images/Skill Analysis.png)
 
 #### 5.1 Upload Resume
 
@@ -663,7 +663,7 @@ The Skill Analysis feature uses AI to compare your resume against job descriptio
 
 #### 5.2 Skill Analysis Tab
 
-![Skill Analysis Results](./docs/images/skill_analysis_results.png)
+![Skill Analysis Results](./Readme Images/Skill Analysis.png)
 
 **How Skill Analysis Works:**
 
@@ -721,7 +721,7 @@ The Skill Analysis feature uses AI to compare your resume against job descriptio
 
 #### 5.3 Project Suggestions Tab
 
-![Project Suggestions](./docs/images/project_suggestions.png)
+![Project Suggestions](./Readme Images/Project Suggestions.png)
 
 **AI-Powered Project Suggestions:**
 
@@ -804,7 +804,7 @@ Bulk manage your applications using Excel files for easy data migration and back
 
 #### 6.1 Export Applications
 
-![Export Feature](./docs/images/export_feature.png)
+![Export Feature](./Readme Images/View Dashboard.png)
 
 **How to Export Your Data:**
 
@@ -1407,11 +1407,11 @@ If you find this project helpful, please consider giving it a ⭐ on GitHub!
 
 ### Desktop Views
 
-![Dashboard Desktop](./docs/images/dashboard_overview.png)
+![Dashboard Desktop](./Readme Images/View Dashboard.png)
 
-![Applications Desktop](./docs/images/applications_page.png)
+![Applications Desktop](./Readme Images/View Dashboard.png)
 
-![Skill Analysis Desktop](./docs/images/skill_analysis_results.png)
+![Skill Analysis Desktop](./Readme Images/Skill Analysis.png)
 
 ---
 
