@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 // Main handler
 export const handler = async (event, context) => {
     // CORS headers
@@ -109,9 +107,12 @@ ${jobDescription}`;
             console.log(`🔑 Trying API key ${i + 1}/${apiKeys.length}...`);
 
             try {
-                const response = await axios.post(
-                    `${API_URL}?key=${currentKey}`,
-                    {
+                const response = await fetch(`${API_URL}?key=${currentKey}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
                         contents: [{
                             parts: [{
                                 text: prompt
@@ -123,24 +124,23 @@ ${jobDescription}`;
                             topP: 0.95,
                             maxOutputTokens: 2048,
                         }
-                    },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        timeout: 30000 // 30 second timeout
-                    }
-                );
+                    })
+                });
 
-                suggestions = response.data.candidates?.[0]?.content?.parts?.[0]?.text || 'No suggestions generated';
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                suggestions = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No suggestions generated';
                 console.log(`✅ Success with API key ${i + 1}/${apiKeys.length}`);
                 break; // Success! Exit the loop
             } catch (error) {
                 lastError = error;
-                const status = error.response?.status || 500;
-                const errorMsg = error.response?.data?.error?.message || error.message;
+                const errorMsg = error.message;
 
-                console.log(`❌ API key ${i + 1}/${apiKeys.length} failed (${status}): ${errorMsg}`);
+                console.log(`❌ API key ${i + 1}/${apiKeys.length} failed: ${errorMsg}`);
 
                 // If this is the last key, we'll handle the error below
                 if (i === apiKeys.length - 1) {
@@ -165,18 +165,14 @@ ${jobDescription}`;
         }
 
         // All keys failed - return error and ask for custom key
-        const status = lastError?.response?.status || 500;
-        const errorData = lastError?.response?.data || {};
-
-        console.error(`❌ All API keys failed. Last error (${status}):`, JSON.stringify(errorData));
+        console.error(`❌ All API keys failed. Last error:`, lastError?.message);
 
         return {
-            statusCode: status,
+            statusCode: 500,
             headers,
             body: JSON.stringify({
                 error: 'All API keys exhausted. Please provide your own API key.',
                 message: lastError?.message || 'Failed to generate project suggestions',
-                details: errorData,
                 requiresKey: true // Tell frontend to ask for custom key
             })
         };
