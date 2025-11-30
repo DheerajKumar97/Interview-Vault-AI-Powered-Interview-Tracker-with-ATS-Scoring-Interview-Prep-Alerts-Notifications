@@ -565,33 +565,67 @@ const SkillAnalysis = () => {
         );
     };
 
-    // Custom renderer for bold text
+    // Custom renderer for project suggestions with improved formatting
     const renderProjectSuggestions = (text: string) => {
         if (!text) return null;
 
-        // Normalize newlines and split by numbered list items
-        // This regex looks for "1. ", "2. " etc at the start of a line or after a newline
-        const projects = text.split(/(?=\d+\.\s\*\*)/).filter(Boolean);
+        // Try multiple splitting strategies to handle different formats
+        let projects: string[] = [];
+
+        // Strategy 1: Split by numbered list with bold markers (e.g., "1. **Title**")
+        if (text.includes('**')) {
+            projects = text.split(/(?=\d+\.\s*\*\*)/g).filter(Boolean);
+        }
+
+        // Strategy 2: Split by numbered list without bold (e.g., "1. Title")
+        if (projects.length === 0 || projects.length === 1) {
+            projects = text.split(/(?=\d+\.\s+[A-Z])/g).filter(Boolean);
+        }
+
+        // Strategy 3: Split by "Project Title" headers
+        if (projects.length === 0 || projects.length === 1) {
+            projects = text.split(/(?=Project\s+Title)/gi).filter(Boolean);
+        }
+
+        // Strategy 4: Split by double newlines as fallback
+        if (projects.length === 0 || projects.length === 1) {
+            projects = text.split(/\n\n+/).filter(Boolean);
+        }
+
+        // If still no proper split, return as single block
+        if (projects.length === 0) {
+            projects = [text];
+        }
 
         return projects.map((project, index) => {
-            // Clean up the project text
             const cleanProject = project.trim();
             if (!cleanProject) return null;
 
             // Split by bold markers to render bold text
             const parts = cleanProject.split(/(\*\*.*?\*\*)/g);
 
+            // Also handle line breaks within the project
+            const renderPart = (part: string, partIndex: number) => {
+                if (part.startsWith('**') && part.endsWith('**')) {
+                    // Remove asterisks and render bold
+                    return <strong key={partIndex} className="font-bold text-gray-900 block mb-2 text-lg">{part.slice(2, -2)}</strong>;
+                }
+
+                // Split by newlines and render with breaks
+                const lines = part.split('\n').filter(Boolean);
+                return lines.map((line, lineIndex) => (
+                    <span key={`${partIndex}-${lineIndex}`}>
+                        {line}
+                        {lineIndex < lines.length - 1 && <br />}
+                    </span>
+                ));
+            };
+
             return (
-                <div key={index} className="mb-6 last:mb-0 p-4 bg-gray-50 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                    <p className="text-gray-700 leading-relaxed">
-                        {parts.map((part, partIndex) => {
-                            if (part.startsWith('**') && part.endsWith('**')) {
-                                // Remove asterisks and render bold
-                                return <strong key={partIndex} className="font-bold text-gray-900 block mb-2 text-lg">{part.slice(2, -2)}</strong>;
-                            }
-                            return <span key={partIndex}>{part}</span>;
-                        })}
-                    </p>
+                <div key={index} className="mb-6 last:mb-0 p-5 bg-gradient-to-br from-gray-50 to-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
+                    <div className="text-gray-700 leading-relaxed space-y-2">
+                        {parts.map((part, partIndex) => renderPart(part, partIndex))}
+                    </div>
                 </div>
             );
         });
