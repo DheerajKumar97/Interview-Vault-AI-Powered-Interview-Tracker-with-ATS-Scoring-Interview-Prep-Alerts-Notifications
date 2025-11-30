@@ -565,66 +565,101 @@ const SkillAnalysis = () => {
         );
     };
 
-    // Custom renderer for project suggestions with improved formatting
+    // Custom renderer for project suggestions with clean formatting and bold headings
     const renderProjectSuggestions = (text: string) => {
         if (!text) return null;
 
-        // Try multiple splitting strategies to handle different formats
-        let projects: string[] = [];
+        // First, clean up ALL escaped characters and markdown artifacts
+        let cleanedText = text
+            .replace(/\\\*/g, '')      // Remove escaped asterisks \*
+            .replace(/\*\*/g, '')      // Remove double asterisks **
+            .replace(/\*/g, '')        // Remove single asterisks *
+            .replace(/\\\//g, '')      // Remove escaped forward slashes \/
+            .replace(/\\/g, '')        // Remove any remaining backslashes
+            .trim();
 
-        // Strategy 1: Split by numbered list with bold markers (e.g., "1. **Title**")
-        if (text.includes('**')) {
-            projects = text.split(/(?=\d+\.\s*\*\*)/g).filter(Boolean);
-        }
+        // Split by numbered list (e.g., "1. ", "2. ", "3. ")
+        let projects = cleanedText.split(/(?=\d+\.\s+)/g).filter(Boolean);
 
-        // Strategy 2: Split by numbered list without bold (e.g., "1. Title")
+        // If no proper split, try by double newlines
         if (projects.length === 0 || projects.length === 1) {
-            projects = text.split(/(?=\d+\.\s+[A-Z])/g).filter(Boolean);
-        }
-
-        // Strategy 3: Split by "Project Title" headers
-        if (projects.length === 0 || projects.length === 1) {
-            projects = text.split(/(?=Project\s+Title)/gi).filter(Boolean);
-        }
-
-        // Strategy 4: Split by double newlines as fallback
-        if (projects.length === 0 || projects.length === 1) {
-            projects = text.split(/\n\n+/).filter(Boolean);
+            projects = cleanedText.split(/\n\n+/).filter(Boolean);
         }
 
         // If still no proper split, return as single block
         if (projects.length === 0) {
-            projects = [text];
+            projects = [cleanedText];
         }
 
         return projects.map((project, index) => {
             const cleanProject = project.trim();
             if (!cleanProject) return null;
 
-            // Split by bold markers to render bold text
-            const parts = cleanProject.split(/(\*\*.*?\*\*)/g);
+            // Parse the project to extract title and content
+            const lines = cleanProject.split('\n').filter(line => line.trim());
 
-            // Also handle line breaks within the project
-            const renderPart = (part: string, partIndex: number) => {
-                if (part.startsWith('**') && part.endsWith('**')) {
-                    // Remove asterisks and render bold
-                    return <strong key={partIndex} className="font-bold text-gray-900 block mb-2 text-lg">{part.slice(2, -2)}</strong>;
+            // Find the title line (usually first line with number)
+            let titleLine = '';
+            let contentLines: string[] = [];
+
+            if (lines.length > 0) {
+                const firstLine = lines[0];
+                // Match patterns like "1. Project Title: Name"
+                if (firstLine.match(/^\d+\./)) {
+                    titleLine = firstLine.trim();
+                    contentLines = lines.slice(1);
+                } else {
+                    contentLines = lines;
+                }
+            }
+
+            // Function to render a line with potential bold headings
+            const renderLine = (line: string, lineIndex: number) => {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) return null;
+
+                // Check if line starts with specific headings that should be bold
+                const boldHeadings = [
+                    'Project Description:',
+                    'Key Technologies/Skills Used:',
+                    'Why it\'s impressive for this role:',
+                    'Why its impressive for this role:',
+                    'Technologies:',
+                    'Skills:',
+                    'Description:'
+                ];
+
+                // Check if this line starts with any of the bold headings
+                for (const heading of boldHeadings) {
+                    if (trimmedLine.startsWith(heading)) {
+                        const content = trimmedLine.substring(heading.length).trim();
+                        return (
+                            <p key={lineIndex} className="mb-2">
+                                <strong className="font-bold text-gray-900">{heading}</strong>
+                                {content && ` ${content}`}
+                            </p>
+                        );
+                    }
                 }
 
-                // Split by newlines and render with breaks
-                const lines = part.split('\n').filter(Boolean);
-                return lines.map((line, lineIndex) => (
-                    <span key={`${partIndex}-${lineIndex}`}>
-                        {line}
-                        {lineIndex < lines.length - 1 && <br />}
-                    </span>
-                ));
+                // Regular line without bold heading
+                return <p key={lineIndex} className="mb-2">{trimmedLine}</p>;
             };
 
             return (
-                <div key={index} className="mb-6 last:mb-0 p-5 bg-gradient-to-br from-gray-50 to-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
+                <div key={index} className="mb-6 last:mb-0 p-5 bg-gradient-to-br from-purple-50 to-white rounded-lg border border-purple-200 shadow-sm hover:shadow-md transition-all duration-200">
+                    {/* Project Title - Bold on One Line */}
+                    {titleLine && (
+                        <div className="mb-4 pb-3 border-b border-purple-100">
+                            <h3 className="text-lg font-bold text-purple-900 leading-tight">
+                                {titleLine}
+                            </h3>
+                        </div>
+                    )}
+
+                    {/* Project Content */}
                     <div className="text-gray-700 leading-relaxed space-y-2">
-                        {parts.map((part, partIndex) => renderPart(part, partIndex))}
+                        {contentLines.map((line, lineIndex) => renderLine(line, lineIndex))}
                     </div>
                 </div>
             );
