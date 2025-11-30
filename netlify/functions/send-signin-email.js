@@ -122,7 +122,7 @@ export const handler = async (event, context) => {
       loginTime: loginTime || new Date().toLocaleString(),
       browserInfo: browserInfo || 'Unknown',
       ipAddress: ipAddress || 'Not Available',
-      resetPasswordURL: `${process.env.FRONTEND_URL || 'https://interview-compass.netlify.app'}/auth/forgot-password`,
+      //resetPasswordURL: `${process.env.FRONTEND_URL || 'https://interview-compass.netlify.app'}/auth/forgot-password`,
       privacyURL: `${process.env.FRONTEND_URL || 'https://interview-compass.netlify.app'}/privacy`,
       settingsURL: `${process.env.FRONTEND_URL || 'https://interview-compass.netlify.app'}/settings`,
     };
