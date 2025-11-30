@@ -425,6 +425,14 @@ const ATSScoreChecker = () => {
                             <Calculator className="h-4 w-4 mr-2" />
                             {calculating ? t("Calculating...") : t("Calculate ATS Score")}
                         </Button>
+
+                        <Button
+                            onClick={() => navigate("/skill-analysis")}
+                            className="bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg hover:from-green-700 hover:to-emerald-700"
+                        >
+                            <Calculator className="h-4 w-4 mr-2" />
+                            {t("Skill Analysis")}
+                        </Button>
                     </div>
 
                     {resumeText && resumeLoadedAt && (

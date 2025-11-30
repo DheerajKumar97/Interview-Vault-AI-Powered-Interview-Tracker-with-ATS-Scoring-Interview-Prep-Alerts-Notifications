@@ -12,6 +12,7 @@ import Applications from "./pages/Applications";
 import ApplicationForm from "./pages/ApplicationForm";
 import ApplicationDetail from "./pages/ApplicationDetail";
 import ATSScoreChecker from "./pages/ATSScoreChecker";
+import SkillAnalysis from "./pages/SkillAnalysis";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
@@ -74,6 +75,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <ATSScoreChecker />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/skill-analysis"
+                element={
+                  <ProtectedRoute>
+                    <SkillAnalysis />
                   </ProtectedRoute>
                 }
               />

@@ -9,6 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import dns from 'dns';
 import net from 'net';
+import axios from 'axios';
 
 const { promises: dnsPromises } = dns;
 
@@ -761,6 +762,128 @@ async function sendDigestEmailInternal(email, frequency, totalApps, userId) {
   const info = await transporter.sendMail(mailOptions);
   console.log(`   ✅ Email sent successfully! Message ID: ${info.messageId}`);
 }
+
+// Gemini Project Suggestions Endpoint
+app.post('/api/generate-projects', async (req, res) => {
+  try {
+    const { jobDescription, companyName, jobTitle, apiKey } = req.body;
+
+    if (!jobDescription) {
+      return res.status(400).json({ error: 'Job description is required' });
+    }
+
+    console.log('🤖 Generating project suggestions for:', companyName, '-', jobTitle);
+
+    // Use custom key if provided, otherwise fallback to env var
+    const GEMINI_API_KEY = apiKey || process.env.GEMINI_API_KEY;
+
+    if (!GEMINI_API_KEY) {
+      console.error('❌ GEMINI_API_KEY not found');
+      return res.status(401).json({
+        error: 'Gemini API key not configured',
+        requiresKey: true
+      });
+    }
+
+    const prompt = `Based on the following job description for ${jobTitle} at ${companyName}, generate 3-5 innovative project ideas that would be impressive for a portfolio and demonstrate the required skills. For each project, provide:
+1. **Project Title** (Make sure the title is bold)
+2. Brief Description (2-3 sentences)
+3. Key Technologies/Skills Used
+4. Why it's impressive for this role
+
+Job Description:
+${jobDescription}
+
+Format the response as a clear, structured markdown list. Ensure all Project Titles are wrapped in double asterisks (e.g. **Project Name**).`;
+
+    const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent';
+
+    const response = await axios.post(
+      `${API_URL}?key=${GEMINI_API_KEY}`,
+      {
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.9,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        }
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const suggestions = response.data.candidates?.[0]?.content?.parts?.[0]?.text || 'No suggestions generated';
+
+    console.log('✅ Project suggestions generated successfully');
+    res.status(200).json({
+      success: true,
+      suggestions: suggestions
+    });
+
+  } catch (error) {
+    const status = error.response?.status || 500;
+    const errorData = error.response?.data || {};
+
+    console.error(`❌ Error generating project suggestions (${status}):`, JSON.stringify(errorData));
+
+    res.status(status).json({
+      error: 'Failed to generate project suggestions',
+      message: error.message,
+      details: errorData,
+      requiresKey: [400, 401, 403, 429].includes(status) // Flag to tell frontend to ask for key
+    });
+  }
+});
+
+// Endpoint to update .env file
+app.post('/api/update-env', async (req, res) => {
+  try {
+    const { key, value } = req.body;
+
+    if (!key || !value) {
+      return res.status(400).json({ error: 'Key and value are required' });
+    }
+
+    // 1. Update process.env immediately for current session
+    process.env[key] = value;
+
+    // 2. Update .env file for persistence
+    const envPath = path.join(__dirname, '.env');
+    let envContent = '';
+
+    if (fs.existsSync(envPath)) {
+      envContent = fs.readFileSync(envPath, 'utf8');
+    }
+
+    // Check if key exists and replace/append
+    const regex = new RegExp(`^${key}\\s*=.*`, 'gm');
+
+    if (regex.test(envContent)) {
+      // Replace all occurrences to avoid duplicates
+      envContent = envContent.replace(regex, `${key}="${value}"`);
+    } else {
+      // Append if not found
+      envContent = envContent.trim() + `\n${key}="${value}"`;
+    }
+
+    fs.writeFileSync(envPath, envContent.trim() + '\n');
+    console.log(`✅ Updated .env file: ${key}="${value.substring(0, 5)}..."`);
+
+    res.json({ success: true, message: 'Environment variable updated' });
+
+  } catch (error) {
+    console.error('❌ Error updating .env:', error);
+    res.status(500).json({ error: 'Failed to update environment variable' });
+  }
+});
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, async () => {

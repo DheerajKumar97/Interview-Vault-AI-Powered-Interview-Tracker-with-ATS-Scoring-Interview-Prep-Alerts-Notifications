@@ -137,21 +137,85 @@ export class FuzzyLogicMatcher {
     // Extract skills and tools from resume text
     extractSkillsFromText(text: string): { skills: string[], tools: string[], experience: number } {
         const commonSkills = [
-            'Python', 'SQL', 'JavaScript', 'TypeScript', 'Java', 'C++', 'C#', 'Ruby', 'PHP', 'Go',
-            'Data Analytics', 'Business Intelligence', 'Data Modeling', 'Statistical Modeling',
-            'Data Engineering', 'Machine Learning', 'Deep Learning', 'AI', 'NLP',
-            'Data Visualization', 'ETL', 'Data Warehousing', 'Big Data',
-            'Power BI', 'Tableau', 'Excel', 'DAX', 'Power Query', 'Report Optimization',
-            'Row-Level Security', 'RLS', 'Azure', 'AWS', 'GCP', 'Cloud Computing'
+            // Programming Languages
+            'Python', 'SQL', 'JavaScript', 'TypeScript', 'Java', 'C++', 'C#', 'Ruby', 'PHP', 'Go', 'Rust', 'Kotlin', 'Swift', 'Scala', 'R',
+
+            // Web Technologies
+            'HTML', 'HTML5', 'CSS', 'CSS3', 'SASS', 'SCSS', 'Less', 'Tailwind', 'Bootstrap',
+
+            // Frontend Frameworks
+            'React', 'Angular', 'Vue', 'Vue.js', 'Next.js', 'Nuxt', 'Svelte', 'Ember',
+
+            // Backend Frameworks
+            'Node.js', 'Express', 'Django', 'Flask', 'FastAPI', 'Spring', 'Spring Boot', 'NestJS', 'Laravel', 'Rails',
+
+            // State Management
+            'Redux', 'MobX', 'Vuex', 'Context API', 'Recoil', 'Zustand',
+
+            // Data & Analytics
+            'Data Analytics', 'Business Intelligence', 'Data Modeling', 'Statistical Modeling', 'Statistical Analysis',
+            'Data Engineering', 'Machine Learning', 'Deep Learning', 'AI', 'Artificial Intelligence', 'NLP', 'Natural Language Processing',
+            'Data Visualization', 'ETL', 'Data Warehousing', 'Big Data', 'Data Science',
+
+            // BI Tools
+            'Power BI', 'Tableau', 'Excel', 'DAX', 'Power Query', 'Report Optimization', 'Looker', 'QlikView', 'Metabase',
+            'Row-Level Security', 'RLS',
+
+            // Cloud Platforms
+            'Azure', 'AWS', 'GCP', 'Google Cloud', 'Cloud Computing', 'Heroku', 'DigitalOcean', 'Vercel', 'Netlify',
+            'EC2', 'S3', 'Lambda', 'CloudFront', 'RDS', 'DynamoDB',
+
+            // APIs & Protocols
+            'REST', 'RESTful', 'GraphQL', 'gRPC', 'WebSocket', 'SOAP', 'API',
+
+            // Testing
+            'Jest', 'Mocha', 'Chai', 'Cypress', 'Selenium', 'Puppeteer', 'JUnit', 'PyTest', 'Testing Library',
+            'TDD', 'BDD', 'Unit Testing', 'Integration Testing', 'E2E', 'End-to-End Testing',
+
+            // Methodologies
+            'Agile', 'Scrum', 'Kanban', 'DevOps', 'Microservices', 'CI/CD', 'Waterfall',
+
+            // Other
+            'Responsive Design', 'Mobile Development', 'Web Development', 'Full Stack', 'Frontend', 'Backend',
+            'Performance Optimization', 'Security', 'Authentication', 'Authorization', 'OAuth', 'JWT'
         ];
 
         const commonTools = [
+            // BI & Visualization Tools
             'Tableau Desktop', 'Tableau Prep', 'Tableau Cloud', 'Tableau Server',
-            'Power BI Desktop', 'Power BI Service', 'Power BI Report Builder', 'Power Automate',
-            'MS SQL Server', 'MySQL', 'PostgreSQL', 'MongoDB', 'Oracle', 'Snowflake',
-            'Azure Synapse', 'Databricks', 'Microsoft Fabric', 'PySpark', 'Spark',
-            'Git', 'GitHub', 'GitLab', 'Bitbucket', 'JIRA', 'Azure DevOps',
-            'Docker', 'Kubernetes', 'Jenkins', 'SharePoint', 'APIs', 'Power BI Gateway'
+            'Power BI Desktop', 'Power BI Service', 'Power BI Report Builder', 'Power Automate', 'Power BI Gateway',
+
+            // Databases
+            'MS SQL Server', 'MySQL', 'PostgreSQL', 'MongoDB', 'Oracle', 'Snowflake', 'Redis', 'Cassandra',
+            'MariaDB', 'SQLite', 'Elasticsearch', 'CouchDB', 'Neo4j',
+
+            // Cloud & Infrastructure
+            'Azure Synapse', 'Databricks', 'Microsoft Fabric', 'PySpark', 'Spark', 'Hadoop',
+            'Terraform', 'Ansible', 'Chef', 'Puppet', 'CloudFormation',
+
+            // Version Control & Collaboration
+            'Git', 'GitHub', 'GitLab', 'Bitbucket', 'SVN', 'JIRA', 'Confluence', 'Azure DevOps',
+            'Trello', 'Asana', 'Slack', 'Microsoft Teams',
+
+            // DevOps & CI/CD
+            'Docker', 'Kubernetes', 'Jenkins', 'GitHub Actions', 'GitLab CI', 'CircleCI', 'Travis CI',
+            'ArgoCD', 'Helm', 'Prometheus', 'Grafana',
+
+            // Message Queues
+            'RabbitMQ', 'Kafka', 'ActiveMQ', 'ZeroMQ', 'Redis Queue',
+
+            // Monitoring & Logging
+            'Datadog', 'New Relic', 'Splunk', 'ELK Stack', 'Kibana', 'Logstash',
+
+            // Build Tools
+            'Webpack', 'Vite', 'Babel', 'Rollup', 'Parcel', 'esbuild', 'npm', 'yarn', 'pnpm',
+
+            // Web Servers
+            'Nginx', 'Apache', 'IIS', 'Tomcat',
+
+            // Other Tools
+            'SharePoint', 'APIs', 'Postman', 'Insomnia', 'VS Code', 'Visual Studio', 'IntelliJ',
+            'Linux', 'Unix', 'Bash', 'Shell', 'PowerShell'
         ];
 
         const lowerText = text.toLowerCase();

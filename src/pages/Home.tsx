@@ -66,7 +66,7 @@ const Home = () => {
       >
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90 via-purple-600/80 to-blue-800/90"></div>
 
-        <div className="relative container mx-auto px-4 py-24 lg:py-32">
+        <div className="relative container mx-auto px-4 pt-40 pb-24 lg:pt-56 lg:pb-32">
           <div className="max-w-4xl mx-auto text-center text-white space-y-8">
 
             {!user && (
