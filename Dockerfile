@@ -22,10 +22,11 @@ FROM nginx:alpine
 # Copy built assets from builder stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy custom nginx config template
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
 # Expose port 80
 EXPOSE 80
 
+# Use existing environment variables to generate the config from the template
 CMD ["nginx", "-g", "daemon off;"]
