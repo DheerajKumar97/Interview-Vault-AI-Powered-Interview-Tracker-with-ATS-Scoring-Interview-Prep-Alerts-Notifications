@@ -31,7 +31,6 @@ services:
     dockerfilePath: ./Dockerfile
     envVars:
       - key: BACKEND_URL
-        fromService:
-          type: web
-          name: interview-vault-backend
-          property: url
+        # We construct the URL using the hostport property
+        # Since this is internal communication within Render, http is fine.
+        value: http://interview-vault-backend:8000
