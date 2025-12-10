@@ -9,65 +9,78 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { API_BASE_URL } from '@/config/api';
 
 const ForgotPassword = () => {
   const [step, setStep] = useState<'email' | 'otp' | 'reset'>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [token, setToken] = useState<any>(null);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { t } = useLanguage();
 
-  const generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
-
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Send password reset email
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/login`,
+      // Call our API endpoint to send OTP
+      const apiUrl = `${API_BASE_URL}/send-otp-email`;
+      console.log('Sending OTP to:', apiUrl);
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
       });
 
-      if (resetError) {
-        toast.error(t('Error sending reset email'));
-        setLoading(false);
-        return;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send OTP');
       }
 
-      const otpCode = generateOTP();
-      setGeneratedOtp(otpCode);
-
-      // Call edge function to send OTP
-      const { error } = await supabase.functions.invoke('send-otp-email', {
-        body: { email, otp: otpCode },
-      });
-
-      if (error) throw error;
-
+      const data = await response.json();
+      setToken(data.token);
       toast.success(t('OTP sent to your email!'));
       setStep('otp');
     } catch (error: any) {
+      console.error('Error sending OTP:', error);
       toast.error(error.message || t('Failed to send OTP'));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerifyOTP = (e: React.FormEvent) => {
+  const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    if (otp === generatedOtp) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/verify-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, otp, token }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Invalid OTP');
+      }
+
       toast.success(t('OTP verified successfully!'));
       setStep('reset');
-    } else {
-      toast.error(t('Invalid OTP. Please try again.'));
+    } catch (error: any) {
+      console.error('Error verifying OTP:', error);
+      toast.error(error.message || t('Invalid OTP. Please try again.'));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,11 +100,18 @@ const ForgotPassword = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
+      const response = await fetch(`${API_BASE_URL}/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, otp, newPassword, token }),
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to reset password');
+      }
 
       toast.success(t('Password reset successfully!'));
       navigate('/auth/login');

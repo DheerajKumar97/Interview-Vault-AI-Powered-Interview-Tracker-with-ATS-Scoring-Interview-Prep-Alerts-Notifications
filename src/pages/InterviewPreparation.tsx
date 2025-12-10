@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { API_BASE_URL } from '../config/api';
+import { getApiEndpoint } from '../config/api';
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -35,30 +35,55 @@ const InterviewPreparation = () => {
     const [loading, setLoading] = useState(true);
     const [resumeText, setResumeText] = useState<string | null>(null);
     const [resumeLoadedAt, setResumeLoadedAt] = useState<Date | null>(null);
-
-    // Interview Questions state
     const [generatingQuestions, setGeneratingQuestions] = useState<boolean>(false);
-    const [interviewQuestions, setInterviewQuestions] = useState<string | null>(null);
+    const [interviewQuestions, setInterviewQuestions] = useState<any[] | null>(null);
     const [customApiKey, setCustomApiKey] = useState<string>("");
     const [showApiKeyInput, setShowApiKeyInput] = useState<boolean>(false);
+    const [userId, setUserId] = useState<string | null>(null);
 
     useEffect(() => {
+        const initUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setUserId(user.id);
+            }
+        };
+        initUser();
         fetchApplications();
         fetchLatestResume();
-
-        // Load saved state from localStorage
-        const savedQuestions = localStorage.getItem('interviewQuestions');
-        const savedCompanyId = localStorage.getItem('interviewCompanyId');
-
-        if (savedQuestions) setInterviewQuestions(savedQuestions);
-        if (savedCompanyId) setSelectedCompanyId(savedCompanyId);
     }, []);
 
-    // Save state to localStorage whenever it changes
     useEffect(() => {
-        if (interviewQuestions) localStorage.setItem('interviewQuestions', interviewQuestions);
-        if (selectedCompanyId) localStorage.setItem('interviewCompanyId', selectedCompanyId);
-    }, [interviewQuestions, selectedCompanyId]);
+        if (!userId) return;
+        const savedQuestions = localStorage.getItem(`interviewQuestions_${userId}`);
+        const savedCompanyId = localStorage.getItem(`interviewCompanyId_${userId}`);
+
+        if (savedQuestions) {
+            try {
+                const parsed = JSON.parse(savedQuestions);
+                // validate it is the new array format
+                if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'object') {
+                    setInterviewQuestions(parsed);
+                } else {
+                    // Legacy format detected, clear it
+                    console.log("Creating new session: clearing legacy interview questions");
+                    localStorage.removeItem(`interviewQuestions_${userId}`);
+                    setInterviewQuestions(null);
+                }
+            } catch {
+                // Invalid JSON, clear it
+                localStorage.removeItem(`interviewQuestions_${userId}`);
+                setInterviewQuestions(null);
+            }
+        }
+        if (savedCompanyId) setSelectedCompanyId(savedCompanyId);
+    }, [userId]);
+
+    useEffect(() => {
+        if (!userId) return;
+        if (interviewQuestions) localStorage.setItem(`interviewQuestions_${userId}`, JSON.stringify(interviewQuestions));
+        if (selectedCompanyId) localStorage.setItem(`interviewCompanyId_${userId}`, selectedCompanyId);
+    }, [interviewQuestions, selectedCompanyId, userId]);
 
     const fetchApplications = async () => {
         try {
@@ -249,7 +274,7 @@ const InterviewPreparation = () => {
 
             toast.info(t("Generating interview questions..."));
 
-            const response = await fetch(`${API_BASE_URL}/generate-interview-questions`, {
+            const response = await fetch(getApiEndpoint('generate-interview-questions'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -264,7 +289,6 @@ const InterviewPreparation = () => {
             });
 
             if (!response.ok) {
-                // Check for 404 specifically to warn about server restart
                 if (response.status === 404) {
                     throw new Error("Server endpoint not found. Please restart the backend server (npm run server).");
                 }
@@ -281,13 +305,15 @@ const InterviewPreparation = () => {
             }
 
             const data = await response.json();
+            console.log("=== FULL AI RESPONSE ===");
+            console.log(data.questions);
+            console.log("=== END RESPONSE ===");
             setInterviewQuestions(data.questions);
             toast.success(t("Interview questions generated!"));
 
-            // If custom key was used successfully, save it to backend
             if (customApiKey) {
                 try {
-                    await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/update-env`, {
+                    await fetch(`${import.meta.env.VITE_API_URL || ''}/api/update-env`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -327,103 +353,65 @@ const InterviewPreparation = () => {
         return { date: formattedDate, time: formattedTime };
     };
 
-    // Custom renderer for interview questions with clean formatting
-    const renderInterviewQuestions = (text: string) => {
-        if (!text) return null;
+    const renderInterviewQuestions = (questionsData: any) => {
+        if (!questionsData) return null;
 
-        // Clean up ALL escaped characters and markdown artifacts
-        let cleanedText = text
-            .replace(/\\\*/g, '')      // Remove escaped asterisks \*
-            .replace(/\*\*/g, '')      // Remove double asterisks **
-            .replace(/\*/g, '')        // Remove single asterisks *
-            .replace(/\\\//g, '')      // Remove escaped forward slashes \/
-            .replace(/\\/g, '')        // Remove any remaining backslashes
-            .trim();
+        // Handle legacy string format or new JSON array
+        let questions: any[] = [];
 
-        // Split by numbered questions (e.g., "1. ", "2. ", "3. ")
-        // Use word boundary \b to avoid splitting inside numbers (e.g., "10." becoming "1" and "0.")
-        let questions = cleanedText.split(/(?=\b\d+\.\s+)/g).filter(Boolean);
-
-        // If no proper split, try by double newlines
-        if (questions.length === 0 || questions.length === 1) {
-            questions = cleanedText.split(/\n\n+/).filter(Boolean);
-        }
-
-        // If still no proper split, return as single block
-        if (questions.length === 0) {
-            questions = [cleanedText];
-        }
-
-        return questions.map((question, index) => {
-            const cleanQuestion = question.trim();
-            if (!cleanQuestion) return null;
-
-            // Parse the question to extract title and content
-            const lines = cleanQuestion.split('\n').filter(line => line.trim());
-
-            // Find the question line (usually first line with number)
-            let questionLine = '';
-            let contentLines: string[] = [];
-
-            if (lines.length > 0) {
-                const firstLine = lines[0];
-                // Match patterns like "1. Question text"
-                if (firstLine.match(/^\d+\./)) {
-                    questionLine = firstLine.trim();
-                    contentLines = lines.slice(1);
-                } else {
-                    contentLines = lines;
-                }
+        if (typeof questionsData === 'string') {
+            // Fallback for legacy string format (should not happen with new backend)
+            try {
+                questions = JSON.parse(questionsData);
+            } catch (e) {
+                // Very basic fallback if it's raw text
+                return <div className="p-4 whitespace-pre-wrap">{questionsData}</div>
             }
+        } else if (Array.isArray(questionsData)) {
+            questions = questionsData;
+        }
 
-            // Function to render a line with potential bold headings
-            const renderLine = (line: string, lineIndex: number) => {
-                const trimmedLine = line.trim();
-                if (!trimmedLine) return null;
-
-                // Check if line starts with specific headings that should be bold
-                const boldHeadings = [
-                    'Answer:',
-                    'Question:',
-                    'Explanation:',
-                    'Key Points:',
-                    'Follow-up:',
-                    'Example:',
-                    'Technical Details:',
-                    'Best Practice:'
-                ];
-
-                // Check if this line starts with any of the bold headings
-                for (const heading of boldHeadings) {
-                    if (trimmedLine.startsWith(heading)) {
-                        const content = trimmedLine.substring(heading.length).trim();
-                        return (
-                            <p key={lineIndex} className="mb-2">
-                                <strong className="font-bold text-gray-900">{heading}</strong>
-                                {content && ` ${content}`}
-                            </p>
-                        );
-                    }
-                }
-
-                // Regular line without bold heading
-                return <p key={lineIndex} className="mb-2">{trimmedLine}</p>;
-            };
+        return questions.map((q, index) => {
+            const isCoding = q.type === 'coding' || q.code;
+            const badge = isCoding ? '💻 Coding Question' : '💡 Conceptual Question';
+            const badgeColor = isCoding ? 'bg-purple-100 text-purple-800 border-purple-300' : 'bg-green-100 text-green-800 border-green-300';
 
             return (
-                <div key={index} className="mb-6 last:mb-0 p-5 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-200 shadow-sm hover:shadow-md transition-all duration-200">
-                    {/* Question Title - Bold on One Line */}
-                    {questionLine && (
-                        <div className="mb-4 pb-3 border-b border-blue-100">
-                            <h3 className="text-lg font-bold text-blue-900 leading-tight">
-                                {questionLine}
+                <div key={index} className="mb-6 last:mb-0 p-6 bg-white rounded-xl border-2 border-gray-200 shadow-md hover:shadow-lg transition-all duration-300">
+                    <div className="mb-5 pb-4 border-b-2 border-gray-200">
+                        <div className="flex items-start gap-3 mb-2">
+                            <div className="flex-shrink-0 w-10 h-10 bg-[#001f3f] text-white rounded-lg flex items-center justify-center font-bold text-lg shadow-md">
+                                {q.number || index + 1}
+                            </div>
+                            <h3 className="text-xl font-bold text-[#001f3f] leading-tight flex-1 pt-1">
+                                {q.question}
                             </h3>
                         </div>
-                    )}
+                        <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full border ${badgeColor} mt-2`}>
+                            {badge}
+                        </span>
+                    </div>
 
-                    {/* Question Content */}
-                    <div className="text-gray-700 leading-relaxed space-y-2">
-                        {contentLines.map((line, lineIndex) => renderLine(line, lineIndex))}
+                    <div className="text-gray-900 leading-relaxed space-y-4">
+                        {/* Answer Section */}
+                        <div className="mb-2">
+                            <h4 className="text-base font-bold text-blue-900 mb-2">Answer:</h4>
+                            <p className="text-gray-900 leading-relaxed text-justify whitespace-pre-line">
+                                {q.answer}
+                            </p>
+                        </div>
+
+                        {/* Code Section */}
+                        {q.code && (
+                            <div className="my-4 rounded-lg overflow-hidden border-2 border-blue-300 bg-gray-900 shadow-lg">
+                                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2 flex items-center justify-between">
+                                    <span className="text-white text-xs font-bold uppercase tracking-wide">Code Solution</span>
+                                </div>
+                                <pre className="p-4 overflow-x-auto text-sm">
+                                    <code className="text-green-400 font-bold leading-relaxed">{q.code}</code>
+                                </pre>
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -442,7 +430,6 @@ const InterviewPreparation = () => {
                     <Header />
                 </div>
 
-                {/* Top Action Bar */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-2 flex-wrap">
                         <Input
@@ -476,7 +463,6 @@ const InterviewPreparation = () => {
                     )}
                 </div>
 
-                {/* Company Selection */}
                 <Card className="glass-card border-gray-200 bg-white/90 shadow-lg p-6 mb-6">
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col sm:flex-row items-end gap-4">
@@ -539,17 +525,28 @@ const InterviewPreparation = () => {
                     </div>
                 </Card>
 
-                {/* Interview Questions Display */}
                 <Card className="glass-card border-gray-200 bg-white/90 shadow-lg p-6">
                     {interviewQuestions ? (
                         <div className="space-y-6">
-                            <div className="border-b border-gray-200 pb-4">
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-2xl font-bold text-gray-900 m-0">Interview Questions & Answers</h2>
+                            <div className="border-b-2 border-gray-200 pb-4">
+                                <div className="flex items-center justify-between flex-wrap gap-3">
+                                    <div>
+                                        <h2 className="text-3xl font-bold text-gray-900 m-0">Interview Questions & Answers</h2>
+                                        <p className="text-sm text-gray-600 mt-2">
+                                            Based on your resume and the job description
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="px-4 py-2 bg-green-100 border-2 border-green-300 rounded-lg">
+                                            <div className="text-xs text-green-700 font-semibold">Conceptual</div>
+                                            <div className="text-2xl font-bold text-green-800">50%</div>
+                                        </div>
+                                        <div className="px-4 py-2 bg-purple-100 border-2 border-purple-300 rounded-lg">
+                                            <div className="text-xs text-purple-700 font-semibold">Coding</div>
+                                            <div className="text-2xl font-bold text-purple-800">50%</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p className="text-sm text-gray-600 mt-2">
-                                    Based on your resume and the job description
-                                </p>
                             </div>
                             <div className="space-y-4">
                                 {renderInterviewQuestions(interviewQuestions)}

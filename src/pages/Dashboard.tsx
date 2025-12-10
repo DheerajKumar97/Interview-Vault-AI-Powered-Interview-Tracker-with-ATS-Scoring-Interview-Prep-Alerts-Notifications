@@ -302,73 +302,16 @@ const Dashboard = () => {
         return;
       }
 
-      toast.success("Generating dashboard report...");
+      toast.success("Sending test email with dashboard data...");
 
-      // Hide dialog temporarily to capture clean screenshot
+      // Close dialog before sending
       setDigestDialogOpen(false);
 
-      // Wait for dialog to close
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      const dashboardElement = document.getElementById("dashboard-content");
-      if (!dashboardElement) {
-        throw new Error("Dashboard content not found");
-      }
-
-      // Capture screenshot with maximum quality
-      const canvas = await html2canvas(dashboardElement, {
-        scale: 3, // Ultra-high quality (3x resolution for crisp rendering)
-        useCORS: true,
-        allowTaint: false,
-        logging: false,
-        backgroundColor: null, // Preserve transparency and gradients
-        windowWidth: dashboardElement.scrollWidth,
-        windowHeight: dashboardElement.scrollHeight,
-        scrollX: 0,
-        scrollY: 0,
-        imageTimeout: 0, // No timeout for image loading
-        removeContainer: true,
-        foreignObjectRendering: false, // Better compatibility
-        onclone: (clonedDoc) => {
-          // Ensure all styles are preserved in the clone
-          const clonedElement = clonedDoc.getElementById("dashboard-content");
-          if (clonedElement) {
-            clonedElement.style.transform = "none";
-            clonedElement.style.overflow = "visible";
-          }
-        }
-      });
-
-      // Convert to high-quality PNG
-      const imgData = canvas.toDataURL("image/png", 1.0); // Maximum quality
-
-      // Calculate optimal PDF dimensions (A4 landscape or custom based on content)
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-
-      // Use portrait orientation for vertical dashboards, landscape for wide ones
-      const orientation = imgHeight > imgWidth ? "portrait" : "landscape";
-
-      // Generate PDF with exact canvas dimensions for pixel-perfect rendering
-      const pdf = new jsPDF({
-        orientation: orientation,
-        unit: "px",
-        format: [imgWidth, imgHeight],
-        compress: false, // No compression to preserve quality
-        hotfixes: ["px_scaling"]
-      });
-
-      // Add image to PDF with exact dimensions (no scaling or distortion)
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight, undefined, "FAST");
-      const pdfData = pdf.output("datauristring");
-
-      toast.success("Sending test email with report...");
-
-      // Send to backend
-      await sendDigestEmail(imgData, pdfData);
+      // Send email with dashboard data
+      await sendDigestEmail();
 
     } catch (error: any) {
-      toast.error("Failed to generate report or send email");
+      toast.error("Failed to send email");
       console.error(error);
       setDigestDialogOpen(true); // Re-open dialog on error
     }
@@ -379,6 +322,30 @@ const Dashboard = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Prepare dashboard statistics
+      const dashboardStats = {
+        totalApplications: data.totalApplications,
+        statusCounts: data.statusCounts,
+        companyCounts: data.companyCounts,
+        companyDetails: data.companyDetails,
+        funnelData: data.funnelData,
+        timelineData: data.timelineData.slice(-6), // Last 6 months
+      };
+
+      // Get recent applications (last 10)
+      const { data: recentApps } = await supabase
+        .from("applications")
+        .select(`
+          id,
+          job_title,
+          current_status,
+          applied_date,
+          name,
+          companies (name)
+        `)
+        .order('applied_date', { ascending: false })
+        .limit(10);
+
       const response = await fetch(`${API_BASE_URL}/send-digest-email`, {
         method: "POST",
         headers: {
@@ -388,8 +355,8 @@ const Dashboard = () => {
           userId: user.id,
           email: user.email,
           frequency: selectedFrequency,
-          dashboardImage,
-          dashboardPdf
+          dashboardStats,
+          recentApplications: recentApps || []
         }),
       });
 
@@ -520,9 +487,9 @@ const Dashboard = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {["00", "15", "30", "45"].map((minute) => (
-                            <SelectItem key={minute} value={minute}>
-                              {minute}
+                          {Array.from({ length: 60 }, (_, i) => i).map((minute) => (
+                            <SelectItem key={minute} value={minute.toString().padStart(2, '0')}>
+                              {minute.toString().padStart(2, '0')}
                             </SelectItem>
                           ))}
                         </SelectContent>

@@ -171,7 +171,10 @@ const Login = () => {
                     {t("Remember me")}
                   </label>
                 </div>
-                <Link to="/auth/forgot-password" className="text-sm text-primary hover:underline">
+                <Link
+                  to="/auth/forgot-password"
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                >
                   {t("Forgot password?")}
                 </Link>
               </div>

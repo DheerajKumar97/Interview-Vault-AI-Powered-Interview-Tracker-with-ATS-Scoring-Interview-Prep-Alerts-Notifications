@@ -1,19 +1,62 @@
 services:
+  # Main web service - Python FastAPI backend serving React frontend
   - type: web
-    name: interview-compass
-    env: node
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    name: interview-vault-render-deployment
+    env: python
+    buildCommand: pip install -r backend/requirements.txt && npm ci && node create-env.js && npm run build
+    startCommand: cd backend && python -m uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
       - key: NODE_VERSION
         value: 20.11.0
+      - key: NODE_ENV
+        value: production
       - key: SMTP_USER
         sync: false
       - key: SMTP_PASS
         sync: false
       - key: VITE_SUPABASE_URL
         sync: false
+      - key: SUPABASE_URL
+        sync: false
       - key: VITE_SUPABASE_PROJECT_ID
         sync: false
       - key: VITE_SUPABASE_PUBLISHABLE_KEY
         sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: PERPLEXITY_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: HUGGINGFACE_API_KEY
+        sync: false
+      - key: VITE_API_URL
+        value: /api
+      - key: RENDER_EXTERNAL_URL
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+
+  # Cron job for scheduled email digests
+  - type: cron
+    name: email-digest-cron
+    env: python
+    schedule: "*/15 * * * *"  # Runs every 15 minutes
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: python backend/scripts/send_digest_cron.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: RENDER_EXTERNAL_URL
+        sync: false
+      - key: VITE_API_URL
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+

@@ -49,7 +49,7 @@ const Home = () => {
 
   const stats = [
     { value: "7", label: t("Stages Tracked") },
-    { value: "350+", label: t("Top Companies") },
+    { value: "600+", label: t("Top Companies") },
     { value: "24/7", label: t("Always Available") }
   ];
 

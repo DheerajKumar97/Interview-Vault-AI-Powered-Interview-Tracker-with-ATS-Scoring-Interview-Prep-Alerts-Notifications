@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { API_BASE_URL } from '../config/api';
+import { getApiEndpoint } from '../config/api';
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Application {
     id: string;
@@ -51,38 +53,55 @@ const SkillAnalysis = () => {
     // Project Suggestions state
     const [activeTab, setActiveTab] = useState<string>("skill-analysis");
     const [generatingProjects, setGeneratingProjects] = useState<boolean>(false);
-    const [projectSuggestions, setProjectSuggestions] = useState<string | null>(null);
+    const [projectSuggestions, setProjectSuggestions] = useState<any[] | null>(null); // Changed to array for JSON
     const [customApiKey, setCustomApiKey] = useState<string>("");
     const [showApiKeyInput, setShowApiKeyInput] = useState<boolean>(false);
+    const [userId, setUserId] = useState<string | null>(null);
 
     useEffect(() => {
+        const initUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setUserId(user.id);
+            }
+        };
+        initUser();
         fetchApplications();
         fetchLatestResume();
+    }, []);
 
+    useEffect(() => {
         // Check URL parameter for tab selection (takes priority)
         const tabParam = searchParams.get('tab');
         if (tabParam === 'skills' || tabParam === 'skill-analysis') {
             setActiveTab('skill-analysis');
         } else if (tabParam === 'projects' || tabParam === 'project-suggestions') {
             setActiveTab('project-suggestions');
-        } else {
+        } else if (userId) {
             // Load saved state from localStorage (to survive page reloads)
-            const savedSuggestions = localStorage.getItem('projectSuggestions');
-            const savedCompanyId = localStorage.getItem('selectedCompanyId');
-            const savedTab = localStorage.getItem('activeTab');
+            const savedSuggestions = localStorage.getItem(`projectSuggestions_${userId}`);
+            const savedCompanyId = localStorage.getItem(`selectedCompanyId_${userId}`);
+            const savedTab = localStorage.getItem(`activeTab_${userId}`);
 
-            if (savedSuggestions) setProjectSuggestions(savedSuggestions);
+            if (savedSuggestions) {
+                try {
+                    setProjectSuggestions(JSON.parse(savedSuggestions));
+                } catch (e) {
+                    setProjectSuggestions(null); // Reset if invalid format
+                }
+            }
             if (savedCompanyId) setSelectedCompanyId(savedCompanyId);
             if (savedTab) setActiveTab(savedTab);
         }
-    }, [searchParams]);
+    }, [searchParams, userId]);
 
     // Save state to localStorage whenever it changes
     useEffect(() => {
-        localStorage.setItem('activeTab', activeTab);
-        if (projectSuggestions) localStorage.setItem('projectSuggestions', projectSuggestions);
-        if (selectedCompanyId) localStorage.setItem('selectedCompanyId', selectedCompanyId);
-    }, [activeTab, projectSuggestions, selectedCompanyId]);
+        if (!userId) return;
+        localStorage.setItem(`activeTab_${userId}`, activeTab);
+        if (projectSuggestions) localStorage.setItem(`projectSuggestions_${userId}`, JSON.stringify(projectSuggestions));
+        if (selectedCompanyId) localStorage.setItem(`selectedCompanyId_${userId}`, selectedCompanyId);
+    }, [activeTab, projectSuggestions, selectedCompanyId, userId]);
 
     useEffect(() => {
         if (selectedCompanyId && resumeText) {
@@ -476,7 +495,7 @@ const SkillAnalysis = () => {
 
             toast.info(t("Generating project suggestions..."));
 
-            const response = await fetch(`${API_BASE_URL}/generate-projects`, {
+            const response = await fetch(getApiEndpoint('generate-projects'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -508,7 +527,7 @@ const SkillAnalysis = () => {
             // If custom key was used successfully, save it to backend
             if (customApiKey) {
                 try {
-                    await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/update-env`, {
+                    await fetch(`${import.meta.env.VITE_API_URL || ''}/api/update-env`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -576,105 +595,73 @@ const SkillAnalysis = () => {
         );
     };
 
-    // Custom renderer for project suggestions with clean formatting and bold headings
-    const renderProjectSuggestions = (text: string) => {
-        if (!text) return null;
+    // Custom renderer for structured project suggestions
+    const renderProjectSuggestions = (suggestions: any[]) => {
+        if (!suggestions || !Array.isArray(suggestions)) return null;
 
-        // First, clean up ALL escaped characters and markdown artifacts
-        let cleanedText = text
-            .replace(/\\\*/g, '')      // Remove escaped asterisks \*
-            .replace(/\*\*/g, '')      // Remove double asterisks **
-            .replace(/\*/g, '')        // Remove single asterisks *
-            .replace(/\\\//g, '')      // Remove escaped forward slashes \/
-            .replace(/\\/g, '')        // Remove any remaining backslashes
-            .trim();
-
-        // Split by numbered list (e.g., "1. ", "2. ", "3. ")
-        let projects = cleanedText.split(/(?=\d+\.\s+)/g).filter(Boolean);
-
-        // If no proper split, try by double newlines
-        if (projects.length === 0 || projects.length === 1) {
-            projects = cleanedText.split(/\n\n+/).filter(Boolean);
-        }
-
-        // If still no proper split, return as single block
-        if (projects.length === 0) {
-            projects = [cleanedText];
-        }
-
-        return projects.map((project, index) => {
-            const cleanProject = project.trim();
-            if (!cleanProject) return null;
-
-            // Parse the project to extract title and content
-            const lines = cleanProject.split('\n').filter(line => line.trim());
-
-            // Find the title line (usually first line with number)
-            let titleLine = '';
-            let contentLines: string[] = [];
-
-            if (lines.length > 0) {
-                const firstLine = lines[0];
-                // Match patterns like "1. Project Title: Name"
-                if (firstLine.match(/^\d+\./)) {
-                    titleLine = firstLine.trim();
-                    contentLines = lines.slice(1);
-                } else {
-                    contentLines = lines;
-                }
-            }
-
-            // Function to render a line with potential bold headings
-            const renderLine = (line: string, lineIndex: number) => {
-                const trimmedLine = line.trim();
-                if (!trimmedLine) return null;
-
-                // Check if line starts with specific headings that should be bold
-                const boldHeadings = [
-                    'Project Description:',
-                    'Key Technologies/Skills Used:',
-                    'Why it\'s impressive for this role:',
-                    'Why its impressive for this role:',
-                    'Technologies:',
-                    'Skills:',
-                    'Description:'
-                ];
-
-                // Check if this line starts with any of the bold headings
-                for (const heading of boldHeadings) {
-                    if (trimmedLine.startsWith(heading)) {
-                        const content = trimmedLine.substring(heading.length).trim();
-                        return (
-                            <p key={lineIndex} className="mb-2">
-                                <strong className="font-bold text-gray-900">{heading}</strong>
-                                {content && ` ${content}`}
-                            </p>
-                        );
-                    }
-                }
-
-                // Regular line without bold heading
-                return <p key={lineIndex} className="mb-2">{trimmedLine}</p>;
-            };
-
-            return (
-                <div key={index} className="mb-6 last:mb-0 p-5 bg-gradient-to-br from-purple-50 to-white rounded-lg border border-purple-200 shadow-sm hover:shadow-md transition-all duration-200">
-                    {/* Project Title - Bold on One Line */}
-                    {titleLine && (
-                        <div className="mb-4 pb-3 border-b border-purple-100">
-                            <h3 className="text-lg font-bold text-purple-900 leading-tight">
-                                {titleLine}
-                            </h3>
-                        </div>
-                    )}
-
-                    {/* Project Content */}
-                    <div className="text-gray-700 leading-relaxed space-y-2">
-                        {contentLines.map((line, lineIndex) => renderLine(line, lineIndex))}
+        return (
+            <Card className="p-8 bg-white/50 backdrop-blur-sm border border-gray-200 shadow-xl rounded-2xl">
+                <div className="space-y-8">
+                    <div className="mb-6">
+                        <p className="text-lg text-[#001f3f] font-medium leading-relaxed mb-2">
+                            Here are five innovative and industry-relevant project ideas that would be impressive for a {selectedCompanyId && applications.find(a => a.id === selectedCompanyId)?.job_title || 'this role'} at {selectedCompanyId && applications.find(a => a.id === selectedCompanyId)?.companies.name || 'the company'}:
+                        </p>
+                        <p className="text-sm text-gray-500">
+                            Based on your resume and job description
+                        </p>
+                        <hr className="mt-4 border-gray-200" />
                     </div>
+
+                    {suggestions.map((project, index) => (
+                        <Card key={index} className="p-6 bg-white shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 rounded-xl overflow-hidden">
+                            <div className="border-l-4 border-purple-600 pl-4 mb-4">
+                                <h3 className="text-xl font-bold text-[#001f3f] m-0">
+                                    Project {index + 1}: {project.title}
+                                </h3>
+                            </div>
+
+                            <div className="space-y-4">
+
+
+                                <div>
+                                    <h4 className="flex items-center gap-2 text-sm font-bold text-purple-800 uppercase tracking-wide mb-2">
+                                        <div className="w-2 h-2 rounded-full bg-purple-600"></div>
+                                        Project Description:
+                                    </h4>
+                                    <p className="text-gray-700 leading-relaxed text-justify ml-4 whitespace-pre-line">
+                                        {project.description}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <h4 className="flex items-center gap-2 text-sm font-bold text-purple-800 uppercase tracking-wide mb-2">
+                                        <div className="w-2 h-2 rounded-full bg-purple-600"></div>
+                                        Key Technologies/Skills Used:
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2 ml-4">
+                                        {project.technologies && project.technologies.map((tech: string, i: number) => (
+                                            <span key={i} className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full border border-green-200 shadow-sm">
+                                                {tech}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="flex items-center gap-2 text-sm font-bold text-purple-800 uppercase tracking-wide mb-2">
+                                        <div className="w-2 h-2 rounded-full bg-purple-600"></div>
+                                        Why it's impressive for this role:
+                                    </h4>
+                                    <p className="text-gray-700 leading-relaxed text-justify ml-4 whitespace-pre-line bg-purple-50/50 p-4 rounded-lg border-l-2 border-purple-200">
+                                        {project.impressive_reason}
+                                    </p>
+                                </div>
+                            </div>
+                        </Card>
+                    ))}
                 </div>
-            );
-        });
+            </Card>
+        );
     };
 
     return (
@@ -778,10 +765,10 @@ const SkillAnalysis = () => {
                             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg animate-in fade-in slide-in-from-top-2">
                                 <div className="flex items-center gap-2 text-amber-800 mb-2">
                                     <Key className="h-4 w-4" />
-                                    <span className="font-medium text-sm">Enter Gemini API Key</span>
+                                    <span className="font-medium text-sm">Enter Perplexity API Key</span>
                                 </div>
                                 <p className="text-xs text-amber-700 mb-3">
-                                    The default API key has hit its limit or is invalid. Please enter your own free API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="underline font-semibold hover:text-amber-900">Google AI Studio</a>.
+                                    The default API key has hit its limit or is invalid. Please enter your own free API key from <a href="https://www.perplexity.ai/settings/api" target="_blank" rel="noreferrer" className="underline font-semibold hover:text-amber-900">Perplexity AI</a>.
                                 </p>
                                 <Input
                                     type="password"

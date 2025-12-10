@@ -127,3 +127,8 @@
     background: linear-gradient(180deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--purple) / 0.05) 100%);
   }
 }
+  /* Make all code blocks bold */
+  pre code,
+  code {
+    font-weight: 700 !important;
+  }

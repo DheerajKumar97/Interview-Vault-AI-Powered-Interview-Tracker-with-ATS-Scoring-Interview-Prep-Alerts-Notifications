@@ -120,7 +120,7 @@ export const sendSignInEmail = async (loginData) => {
     let template = loadTemplate('signin-email');
 
     // Generate URLs
-    const resetPasswordURL = `${process.env.VITE_APP_URL || 'https://interview-compass.netlify.app'}/auth/reset-password`;
+    const resetPasswordURL = `${process.env.FRONTEND_URL || 'https://dheerajkumar-k-interview-vault.netlify.app'}/auth/forgot-password`;
     const supportURL = `${process.env.VITE_APP_URL || 'https://interview-compass.netlify.app'}/support`;
     const settingsURL = `${process.env.VITE_APP_URL || 'https://interview-compass.netlify.app'}/settings`;
     const privacyURL = `${process.env.VITE_APP_URL || 'https://interview-compass.netlify.app'}/privacy`;

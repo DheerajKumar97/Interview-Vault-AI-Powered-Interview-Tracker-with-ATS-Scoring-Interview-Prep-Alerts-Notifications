@@ -31,12 +31,59 @@ import { ArrowLeft, Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Header from "@/components/Header";
 
+// Fuzzy logic helpers
+const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+const getAcronym = (str: string) => {
+  const words = str.trim().split(/[\s-]+/);
+  if (words.length <= 1) return "";
+  return words.map(w => w[0]).join('').toLowerCase();
+};
+
+const levenshteinDistance = (a: string, b: string) => {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+
+  const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
+
+  for (let i = 0; i <= b.length; i++) matrix[i][0] = i;
+  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      const cost = b[i - 1] === a[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
+  }
+  return matrix[b.length][a.length];
+
+};
+
+// Common aliases map (normalized)
+const commonAliases: Record<string, string[]> = {
+  "cts": ["cognizant", "cognizanttechnologysolutions"],
+  "tcs": ["tataconsultancyservices"],
+  "infy": ["infosys"],
+  "hcl": ["hcltechnologies", "hcltech"],
+  "wipro": ["wiprolimited"],
+  "ibm": ["internationalbusinessmachines"],
+  "aws": ["amazonwebservices"],
+  "ms": ["microsoft"],
+  "fb": ["facebook", "meta"],
+  "kp": ["kpit"],
+};
+
 const ApplicationForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [companies, setCompanies] = useState<{ id: string; name: string; company_website?: string; industry?: string; location?: string; company_size?: string }[]>([]);
   const [newCompany, setNewCompany] = useState(false);
   const [open, setOpen] = useState(false);
+  const [suggestedCompany, setSuggestedCompany] = useState<{ id: string; name: string } | null>(null);
 
   const [formData, setFormData] = useState({
     companyId: "",
@@ -97,6 +144,48 @@ const ApplicationForm = () => {
         companySize: selectedCompany.company_size || ""
       });
     }
+  };
+
+  const checkCompanyExists = (name: string) => {
+    if (!name.trim()) {
+      setSuggestedCompany(null);
+      return;
+    }
+
+    const inputName = name.trim();
+    const nInput = normalize(inputName);
+    const inputAcronym = getAcronym(inputName);
+
+    const match = companies.find(c => {
+      const cName = c.name;
+      const nCName = normalize(cName);
+      const cAcronym = getAcronym(cName);
+
+      // 1. Exact match (normalized)
+      if (nInput === nCName) return true;
+
+      // 2. Acronym match
+      if (inputAcronym && inputAcronym === nCName) return true; // Input is "Tata..." (tcs), Existing is "tcs"
+      if (cAcronym && nInput === cAcronym) return true; // Input is "tcs", Existing is "Tata..." (tcs)
+
+      // 3. Substring match (if length >= 3)
+      if (nInput.length >= 3 && nCName.includes(nInput)) return true; // "idea" in "ideas2technologies"
+      if (nCName.length >= 3 && nInput.includes(nCName)) return true;
+
+      // 4. Alias match
+      if (commonAliases[nInput] && commonAliases[nInput].includes(nCName)) return true; // "cts" -> "cognizant"
+      // Check if existing company is an alias for input (reverse check not strictly needed for "cts" input, but good for completeness)
+
+      // 5. Levenshtein distance
+      if (Math.abs(nInput.length - nCName.length) < 3) {
+        const dist = levenshteinDistance(nInput, nCName);
+        if (dist <= 2 && nInput.length > 3) return true;
+      }
+
+      return false;
+    });
+
+    setSuggestedCompany(match || null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -411,12 +500,33 @@ const ApplicationForm = () => {
                     <Input
                       id="companyName"
                       value={formData.companyName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, companyName: e.target.value })
-                      }
+                      onChange={(e) => {
+                        setFormData({ ...formData, companyName: e.target.value });
+                        checkCompanyExists(e.target.value);
+                      }}
                       required={newCompany}
                       placeholder="Enter company name"
                     />
+                    {suggestedCompany && (
+                      <div className="text-sm text-yellow-600 bg-yellow-50 p-3 rounded-md border border-yellow-200 flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+                        <span>
+                          Did you mean <strong>{suggestedCompany.name}</strong>?
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="hover:bg-yellow-100 text-yellow-700"
+                          onClick={() => {
+                            setNewCompany(false);
+                            handleCompanySelect(suggestedCompany.id);
+                            setSuggestedCompany(null);
+                          }}
+                        >
+                          Use Existing
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseAdmin } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { sendSignUpEmail, sendSignInEmail } from '@/utils/emailService';
@@ -98,15 +98,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     password: string,
     fullName: string
   ) => {
-    // First, check if email already exists in the user_emails table
+    // First, check if email already exists in the system (auth.users)
     try {
-      const { data: existingEmails } = await supabase
-        .from('user_emails')
-        .select('email')
-        .eq('email', email.toLowerCase())
-        .limit(1);
+      const { data: emailExists, error: checkError } = await supabase
+        .rpc('check_email_exists', { email_to_check: email });
 
-      if (existingEmails && existingEmails.length > 0) {
+      if (checkError) {
+        console.warn('Email deduplication check failed:', checkError);
+      } else if (emailExists) {
         return {
           error: {
             message: 'This email address is already registered. Please use a different email or try logging in.'
@@ -114,7 +113,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
       }
     } catch (checkError) {
-      // If table check fails (e.g. table doesn't exist yet), log warning but continue
       console.warn('Email deduplication check failed:', checkError);
     }
 
@@ -143,6 +141,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     if (data.user) {
+      // CRITICAL: Manually insert into user_emails table as a fallback
+      // This ensures the record exists even if the database trigger fails
+      try {
+        const { error: insertError } = await supabaseAdmin
+          .from('user_emails')
+          .insert({
+            user_id: data.user.id,
+            email: email.toLowerCase()
+          });
+
+        if (insertError) {
+          console.warn('⚠️ Manual user_emails insert failed:', insertError);
+          // Show error to user for debugging
+          toast.error(`Failed to save email: ${insertError.message || 'Unknown error'}`);
+        } else {
+          console.log('✅ Successfully inserted into user_emails table');
+        }
+      } catch (insertError: any) {
+        console.warn('⚠️ Unexpected error during user_emails insert:', insertError);
+        toast.error(`Unexpected error saving email: ${insertError.message || 'Unknown error'}`);
+      }
+
       toast.success('Account created successfully! Check your email.');
 
       // Send welcome email (non-blocking)
