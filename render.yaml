@@ -12,13 +12,13 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
-      - key: GEMINI_API_KEY
-        sync: false
       - key: OPENAI_API_KEY
         sync: false
-      - key: PERPLEXITY_API_KEY
+      - key: BREVO_API_KEY
         sync: false
-      - key: RESEND_API_KEY
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
         sync: false
 
   # -----------------------------
@@ -31,6 +31,11 @@ services:
     dockerfilePath: ./Dockerfile
     envVars:
       - key: BACKEND_URL
-        # We construct the URL using the hostport property
-        # Since this is internal communication within Render, http is fine.
+        # Internal URL for container-to-container communication
         value: http://interview-vault-backend:8000
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: VITE_SUPABASE_PROJECT_ID
+        sync: false
