@@ -57,7 +57,10 @@ export const LoadingOverlay = ({ isLoading, message = "Processing..." }: Loading
                 <p className="text-sm text-gray-500 text-center animate-pulse">
                     This may take a few moments...
                 </p>
+                <p className="text-xs text-blue-600/80 text-center mt-2 font-medium">
+                    Powered by Interview Vault AI
+                </p>
             </div>
-        </div>
+        </div >
     );
 };

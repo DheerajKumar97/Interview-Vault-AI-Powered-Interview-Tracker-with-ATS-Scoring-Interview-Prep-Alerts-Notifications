@@ -26,7 +26,6 @@ class Settings:
     SMTP_PASS: str = os.getenv('SMTP_PASS', '')
     
     # AI API Keys
-    PERPLEXITY_API_KEY: str = os.getenv('PERPLEXITY_API_KEY', '')
     GEMINI_API_KEY: str = os.getenv('GEMINI_API_KEY', '')
     HUGGINGFACE_API_KEY: str = os.getenv('HUGGINGFACE_API_KEY', '')
     OPENAI_API_KEY: str = os.getenv('OPENAI_API_KEY') or os.getenv('OPEN_API_KEY', '')
@@ -41,25 +40,7 @@ class Settings:
     PORT: int = int(os.getenv('PORT', '3001'))
     NODE_ENV: str = os.getenv('NODE_ENV', 'development')
     
-    @classmethod
-    def get_perplexity_keys(cls) -> list[str]:
-        """
-        Parse PERPLEXITY_API_KEY which can be a single key or JSON array
-        Returns a list of API keys to try in order
-        """
-        raw_key = cls.PERPLEXITY_API_KEY
-        if not raw_key:
-            return []
-        
-        try:
-            # Try to parse as JSON array
-            parsed = json.loads(raw_key)
-            if isinstance(parsed, list):
-                return [k.strip() for k in parsed if k.strip()]
-            return [raw_key.strip()]
-        except json.JSONDecodeError:
-            # Single key
-            return [raw_key.strip()]
+
     
     @classmethod
     def is_production(cls) -> bool:
@@ -74,7 +55,6 @@ class Settings:
             'SUPABASE_SERVICE_ROLE_KEY': bool(cls.SUPABASE_SERVICE_ROLE_KEY),
             'BREVO_API_KEY': bool(cls.BREVO_API_KEY),
             'BREVO_API_KEY': bool(cls.BREVO_API_KEY),
-            'PERPLEXITY_API_KEY': bool(cls.PERPLEXITY_API_KEY),
             'OPENAI_API_KEY': bool(cls.OPENAI_API_KEY),
         }
 

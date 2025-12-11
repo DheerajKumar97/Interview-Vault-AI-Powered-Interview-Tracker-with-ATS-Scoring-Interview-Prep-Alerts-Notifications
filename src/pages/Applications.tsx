@@ -470,6 +470,7 @@ const Applications = () => {
     "Interview Rescheduled",
     "Selected",
     "Offer Released",
+    "Rejected",
     "Ghosted",
   ];
 

@@ -531,7 +531,7 @@ const SkillAnalysis = () => {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            key: 'GEMINI_API_KEY',
+                            key: 'OPENAI_API_KEY',
                             value: customApiKey
                         })
                     });
@@ -765,14 +765,14 @@ const SkillAnalysis = () => {
                             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg animate-in fade-in slide-in-from-top-2">
                                 <div className="flex items-center gap-2 text-amber-800 mb-2">
                                     <Key className="h-4 w-4" />
-                                    <span className="font-medium text-sm">Enter Perplexity API Key</span>
+                                    <span className="font-medium text-sm">Enter OpenAI API Key</span>
                                 </div>
                                 <p className="text-xs text-amber-700 mb-3">
-                                    The default API key has hit its limit or is invalid. Please enter your own free API key from <a href="https://www.perplexity.ai/settings/api" target="_blank" rel="noreferrer" className="underline font-semibold hover:text-amber-900">Perplexity AI</a>.
+                                    The default API key has hit its limit or is invalid. Please enter your own free API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" className="underline font-semibold hover:text-amber-900">OpenAI</a>.
                                 </p>
                                 <Input
                                     type="password"
-                                    placeholder="Paste your API key here (AIzaSy...)"
+                                    placeholder="Paste your API key here (sk-...)"
                                     value={customApiKey}
                                     onChange={(e) => setCustomApiKey(e.target.value)}
                                     className="bg-white border-amber-300 focus:ring-amber-500"

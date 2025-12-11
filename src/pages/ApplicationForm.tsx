@@ -110,6 +110,7 @@ const ApplicationForm = () => {
     "Interview Rescheduled",
     "Selected",
     "Offer Released",
+    "Rejected",
     "Ghosted"
   ];
 
@@ -281,6 +282,7 @@ const ApplicationForm = () => {
         "Interview Rescheduled": "INTERVIEW_RESCHEDULED",
         "Selected": "SELECTED",
         "Offer Released": "OFFER_RELEASED",
+        "Rejected": "REJECTED",
         "Ghosted": "GHOSTED"
       };
 

@@ -67,7 +67,7 @@
 - **Framework**: FastAPI (Python 3.11)
 - **Server**: Uvicorn
 - **Database**: Supabase (PostgreSQL)
-- **AI Integration**: OpenAI (GPT-4o-mini) / Google Gemini / Perplexity
+- **AI Integration**: OpenAI (GPT-4o-mini) / Google Gemini
 - **Parser**: PyMuPDF / LlamaParse (for Resume Parsing)
 
 ### Infrastructure
@@ -163,7 +163,7 @@ VITE_API_URL=http://localhost:3001
 # Required for Project Suggestions & Interview Prep
 OPENAI_API_KEY=sk-...
 GEMINI_API_KEY=...
-PERPLEXITY_API_KEY=...
+
 
 # --- Email Services (Optional) ---
 RESEND_API_KEY=re_...

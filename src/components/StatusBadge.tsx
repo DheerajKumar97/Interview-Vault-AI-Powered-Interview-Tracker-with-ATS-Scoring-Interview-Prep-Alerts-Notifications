@@ -39,6 +39,11 @@ const statusColorMap: Record<string, { bg: string; text: string; border: string 
     text: "text-red-900",
     border: "border-red-300",
   },
+  "Rejected": {
+    bg: "bg-red-100",
+    text: "text-red-900",
+    border: "border-red-300",
+  },
   "Applied": {
     bg: "bg-gray-100",
     text: "text-gray-900",
@@ -50,7 +55,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export const StatusBadge = ({ status }: StatusBadgeProps) => {
   const { t } = useLanguage();
-  const colors = statusColorMap[status] || {
+
+  // Normalize "APPLIED" to "Applied" for display and styling
+  const normalizedStatus = status === "APPLIED" ? "Applied" : status;
+
+  const colors = statusColorMap[normalizedStatus] || {
     bg: "bg-gray-100",
     text: "text-gray-900",
     border: "border-gray-300",
@@ -58,7 +67,7 @@ export const StatusBadge = ({ status }: StatusBadgeProps) => {
 
   return (
     <div className={`inline-flex items-center px-3 py-1 rounded-full font-medium text-sm border ${colors.bg} ${colors.text} ${colors.border}`}>
-      {t(status)}
+      {t(normalizedStatus)}
     </div>
   );
 };

@@ -1,0 +1,29 @@
+services:
+  # Single combined service for free tier
+  - type: web
+    name: interview-vault
+    env: docker
+    dockerfilePath: ./Dockerfile.combined
+    plan: free
+    region: oregon
+    envVars:
+      # Backend Environment Variables
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      # Frontend Environment Variables
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: VITE_SUPABASE_PROJECT_ID
+        sync: false

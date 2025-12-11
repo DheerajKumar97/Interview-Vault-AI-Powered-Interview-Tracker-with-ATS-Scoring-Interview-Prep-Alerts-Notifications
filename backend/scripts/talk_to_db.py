@@ -21,7 +21,7 @@ load_dotenv(env_path)
 # Configuration
 SUPABASE_URL = os.getenv('SUPABASE_URL') or os.getenv('VITE_SUPABASE_URL')
 SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('VITE_SUPABASE_SERVICE_ROLE_KEY')
-PERPLEXITY_API_KEY = os.getenv('PERPLEXITY_API_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY') or os.getenv('OPEN_API_KEY')
 
 # Validate environment
 if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
@@ -29,7 +29,7 @@ if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
     print("   Please set in .env file:")
     print("   - SUPABASE_URL (or VITE_SUPABASE_URL)")
     print("   - SUPABASE_SERVICE_ROLE_KEY")
-    print("   - PERPLEXITY_API_KEY")
+    print("   - OPENAI_API_KEY")
     sys.exit(1)
 
 print("✅ Environment variables loaded successfully\n")
@@ -69,6 +69,7 @@ VALID STATUS VALUES (case-sensitive):
 - "Offer Released"
 - "Ghosted"
 - "Rejected"
+- "Applied"
 
 CRITICAL RULES:
 1. Always return valid PostgreSQL SQL
@@ -111,17 +112,10 @@ def classify_query(question: str) -> str:
     return 'conversation'
 
 
-async def call_perplexity(prompt: str, system_prompt: str = None, max_tokens: int = 500) -> str:
-    """Call Perplexity API"""
-    api_keys = []
-    try:
-        import json
-        api_keys = json.loads(PERPLEXITY_API_KEY)
-    except:
-        api_keys = [PERPLEXITY_API_KEY] if PERPLEXITY_API_KEY else []
-    
-    if not api_keys:
-        return "No Perplexity API key found"
+async def call_openai(prompt: str, system_prompt: str = None, max_tokens: int = 500) -> str:
+    """Call OpenAI API"""
+    if not OPENAI_API_KEY:
+        return "No OpenAI API key found"
     
     messages = []
     if system_prompt:
@@ -129,35 +123,32 @@ async def call_perplexity(prompt: str, system_prompt: str = None, max_tokens: in
     messages.append({"role": "user", "content": prompt})
     
     async with httpx.AsyncClient() as client:
-        for api_key in api_keys:
-            try:
-                response = await client.post(
-                    "https://api.perplexity.ai/chat/completions",
-                    json={
-                        "model": "sonar",
-                        "messages": messages,
-                        "max_tokens": max_tokens,
-                        "temperature": 0.1
-                    },
-                    headers={
-                        "Authorization": f"Bearer {api_key.strip()}",
-                        "Content-Type": "application/json"
-                    },
-                    timeout=30.0
-                )
-                response.raise_for_status()
-                data = response.json()
-                return data["choices"][0]["message"]["content"].strip()
-            except Exception as e:
-                continue
-    
-    return "Failed to get response from AI"
+        try:
+            response = await client.post(
+                "https://api.openai.com/v1/chat/completions",
+                json={
+                    "model": "gpt-4o-mini",
+                    "messages": messages,
+                    "max_tokens": max_tokens,
+                    "temperature": 0.1
+                },
+                headers={
+                    "Authorization": f"Bearer {OPENAI_API_KEY.strip()}",
+                    "Content-Type": "application/json"
+                },
+                timeout=30.0
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            return f"Failed to get response from AI: {str(e)}"
 
 
 async def natural_language_to_sql(question: str) -> str:
     """Convert natural language to SQL"""
     print("🤖 Converting question to SQL...")
-    sql = await call_perplexity(question, DATABASE_SCHEMA, 500)
+    sql = await call_openai(question, DATABASE_SCHEMA, 500)
     
     # Clean up SQL
     sql = sql.replace("```sql", "").replace("```", "").strip()
@@ -238,7 +229,7 @@ async def ask_question(question: str):
         response = format_results(results, question)
         print(f"\n{response}")
     else:
-        response = await call_perplexity(question, max_tokens=500)
+        response = await call_openai(question, max_tokens=500)
         print(f"\n💡 {response}")
     
     add_to_history("assistant", response)

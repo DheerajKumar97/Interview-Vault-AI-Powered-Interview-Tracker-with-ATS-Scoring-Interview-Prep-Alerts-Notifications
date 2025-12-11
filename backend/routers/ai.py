@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from config import settings
-from services.ai_service import call_perplexity_api, call_openai_api, truncate_text
+from services.ai_service import call_openai_api, truncate_text
 from services.supabase_service import get_admin_client
 
 router = APIRouter()

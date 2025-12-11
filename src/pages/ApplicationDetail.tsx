@@ -69,6 +69,7 @@ const eventTypeLabels: Record<string, string> = {
   INTERVIEW_RESCHEDULED: "Interview Rescheduled",
   SELECTED: "Selected",
   OFFER_RELEASED: "Offer Released",
+  REJECTED: "Rejected",
   GHOSTED: "Ghosted",
 };
 
@@ -81,7 +82,8 @@ const eventTypeOrder: Record<string, number> = {
   INTERVIEW_RESCHEDULED: 3,
   SELECTED: 4,
   OFFER_RELEASED: 5,
-  GHOSTED: 6,
+  REJECTED: 6,
+  GHOSTED: 7,
 };
 
 // Validation helper function to check date sequence
@@ -396,6 +398,7 @@ const ApplicationDetail = () => {
         INTERVIEW_RESCHEDULED: "Interview Rescheduled",
         SELECTED: "Selected",
         OFFER_RELEASED: "Offer Released",
+        REJECTED: "Rejected",
         GHOSTED: "Ghosted",
       };
 
@@ -467,6 +470,11 @@ const ApplicationDetail = () => {
         border: "border-l-4 border-emerald-600",
         bg: "bg-emerald-50",
         textColor: "text-emerald-700",
+      },
+      REJECTED: {
+        border: "border-l-4 border-red-600",
+        bg: "bg-red-50",
+        textColor: "text-red-700",
       },
       GHOSTED: {
         border: "border-l-4 border-red-600",
