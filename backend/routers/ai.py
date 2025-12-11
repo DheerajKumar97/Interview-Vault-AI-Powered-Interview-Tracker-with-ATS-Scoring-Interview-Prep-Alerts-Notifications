@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from config import settings
 from services.ai_service import call_openai_api, truncate_text
 from services.supabase_service import get_admin_client
+from Policy_Knowledge_Base import get_policy_knowledge_base
 
 router = APIRouter()
 
@@ -552,6 +553,9 @@ async def chat(request: ChatRequest):
                 import traceback
                 print(traceback.format_exc())
 
+        # Fetch policy knowledge base (must be done before building the f-string)
+        policy_knowledge = await get_policy_knowledge_base()
+
         # Build system prompt with comprehensive rules
         system_prompt = f"""🚨🚨🚨 CRITICAL RULE #1 - READ THIS IMMEDIATELY 🚨🚨🚨
 
@@ -582,6 +586,16 @@ YOU ARE STRICTLY LIMITED TO THESE TOPICS ONLY:
 4. **AI & Technology** - Technical concepts relevant to IT, software, data engineering, AI/ML
 5. **User's Application Data** - Their job applications, companies, HR contacts, statistics
 6. **User's Personal Profile** - Use RESUME DATA for experience, skills, projects, contact details
+7. **Interview Vault Policies** - Privacy Policy, Terms of Use, Cookie Policy, Do Not Sell, Ad Choices - USE THE POLICY KNOWLEDGE BASE SECTION BELOW!
+
+🚨🚨🚨 CRITICAL - POLICY QUERIES 🚨🚨🚨
+
+When user asks about "policies", "privacy", "terms", "cookies", "do not sell", "ad choices", or similar:
+- ✅ USE ONLY the "INTERVIEW VAULT POLICY KNOWLEDGE BASE" section below
+- ✅ Summarize the relevant policy in a friendly, readable format
+- ✅ Include the support email (interviewvault.2026@gmail.com) if relevant
+- ❌ DO NOT say you don't have policy information
+- ❌ DO NOT give generic out-of-scope responses for policy questions
 
 🚨🚨🚨 CRITICAL - FOUNDER QUERIES - NO WEB SEARCH 🚨🚨🚨
 
@@ -775,7 +789,11 @@ ADDITIONAL RULES:
    - Separate content with bold section headers instead of visual separators
    - Keep responses compact and easy to read
 
-Respond naturally and helpfully using ONLY the information provided above.{user_resume_context}"""
+Respond naturally and helpfully using ONLY the information provided above.
+
+{policy_knowledge}
+
+{user_resume_context}"""
 
         response_text = await call_openai_api(
             prompt=message,
