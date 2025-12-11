@@ -74,14 +74,16 @@ const COLORS = {
   "Interview Rescheduled": "hsl(280 65% 60%)", // Purple
   "Selected": "hsl(142 71% 45%)", // Green
   "Offer Released": "hsl(142 71% 45%)", // Green
-  "Ghosted": "hsl(0 84.2% 60.2%)", // Red
+  "Rejected": "hsl(0 84.2% 60.2%)", // Red
+  "Ghosted": "hsl(0 0% 45%)", // Gray
 };
 
 const getStatusColor = (status: string) => {
   if (status === "HR Screening Done") return "hsl(217 91% 60%)"; // Blue
   if (["Shortlisted", "Interview Scheduled", "Interview Rescheduled"].includes(status)) return "hsl(280 65% 60%)"; // Purple
   if (["Selected", "Offer Released"].includes(status)) return "hsl(142 71% 45%)"; // Green
-  if (status === "Ghosted") return "hsl(0 84.2% 60.2%)"; // Red
+  if (status === "Rejected") return "hsl(0 84.2% 60.2%)"; // Red
+  if (status === "Ghosted") return "hsl(0 0% 45%)"; // Gray
   return "hsl(210 40% 96.1%)"; // Muted
 };
 
@@ -211,6 +213,7 @@ const Dashboard = () => {
         "Interview Rescheduled",
         "Selected",
         "Offer Released",
+        "Rejected",
         "Ghosted",
       ];
 
@@ -648,6 +651,22 @@ const Dashboard = () => {
                     navigate(`/applications?companies=${encodeURIComponent(companies.join(','))}`);
                   }}
                 />
+                <KpiCard
+                  title="Rejected"
+                  value={data.statusCounts["Rejected"] || 0}
+                  icon={Users}
+                  companies={data.statusApplications["Rejected"]?.map(app => ({
+                    name: app.companies?.name || app.name,
+                    industry: app.companies?.industry || app.industry,
+                    company_size: app.companies?.company_size || app.company_size,
+                    hr_name: app.companies?.hr_name || app.hr_name,
+                    hr_phone: app.companies?.hr_phone || app.hr_phone,
+                  }))}
+                  onClick={() => {
+                    const companies = [...new Set(data.statusApplications["Rejected"]?.map(app => app.companies?.name || app.name) || [])];
+                    navigate(`/applications?companies=${encodeURIComponent(companies.join(','))}`);
+                  }}
+                />
               </div>
 
               {/* Charts Row 1 */}
@@ -724,7 +743,8 @@ const Dashboard = () => {
                                         background: status === "HR Screening Done" ? "hsl(217 91% 60%)" :
                                           ["Shortlisted", "Interview Scheduled", "Interview Rescheduled"].includes(status) ? "hsl(280 65% 60%)" :
                                             ["Selected", "Offer Released"].includes(status) ? "hsl(142 71% 45%)" :
-                                              "hsl(0 84% 60%)"
+                                              status === "Rejected" ? "hsl(0 84.2% 60.2%)" :
+                                                "hsl(0 0% 45%)"
                                       }}></div>
                                       <p className="font-bold text-sm">{status}</p>
                                     </div>
@@ -775,7 +795,8 @@ const Dashboard = () => {
                             if (entry.name === "HR Screening Done") fill = "url(#blueGrad)";
                             else if (["Shortlisted", "Interview Scheduled", "Interview Rescheduled"].includes(entry.name)) fill = "url(#purpleGrad)";
                             else if (["Selected", "Offer Released"].includes(entry.name)) fill = "url(#greenGrad)";
-                            else if (entry.name === "Ghosted") fill = "url(#redGrad)";
+                            else if (entry.name === "Rejected") fill = "url(#redGrad)";
+                            else if (entry.name === "Ghosted") fill = "hsl(0 0% 45%)";
 
                             return <Cell key={`cell-${index}`} fill={fill} />;
                           })}
