@@ -63,7 +63,7 @@ def sign_otp(email: str, otp: str, expires_at: int) -> str:
 async def send_signin_email(request: SignInEmailRequest):
     """Send sign-in notification email"""
     try:
-        print(f"📧 Sending Sign In email to: {request.email}")
+        print(f" Sending Sign In email to: {request.email}")
         
         html_content = get_signin_email_html(
             full_name=request.fullName or "User",
@@ -80,11 +80,11 @@ async def send_signin_email(request: SignInEmailRequest):
             html_content=html_content
         )
         
-        print(f"✅ Sign In email sent via Brevo: {result.get('messageId')}")
+        print(f" Sign In email sent via Brevo: {result.get('messageId')}")
         return result
         
     except Exception as e:
-        print(f"❌ Error sending sign in email: {str(e)}")
+        print(f" Error sending sign in email: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
 
 
@@ -92,7 +92,7 @@ async def send_signin_email(request: SignInEmailRequest):
 async def send_signup_email(request: SignUpEmailRequest):
     """Send welcome email after signup"""
     try:
-        print(f"📧 Sending Sign Up email to: {request.email}")
+        print(f" Sending Sign Up email to: {request.email}")
         
         html_content = get_signup_email_html(
             full_name=request.fullName or "Future Achiever",
@@ -106,11 +106,11 @@ async def send_signup_email(request: SignUpEmailRequest):
             html_content=html_content
         )
         
-        print(f"✅ Sign Up email sent via Brevo: {result.get('messageId')}")
+        print(f" Sign Up email sent via Brevo: {result.get('messageId')}")
         return result
         
     except Exception as e:
-        print(f"❌ Error sending sign up email: {str(e)}")
+        print(f" Error sending sign up email: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
 
 
@@ -118,7 +118,7 @@ async def send_signup_email(request: SignUpEmailRequest):
 async def send_otp_email(request: OTPEmailRequest):
     """Send OTP email for password reset"""
     try:
-        print(f"📧 Sending OTP to: {request.email}")
+        print(f" Sending OTP to: {request.email}")
         
         # Generate 6-digit OTP
         otp = str(random.randint(100000, 999999))
@@ -135,7 +135,7 @@ async def send_otp_email(request: OTPEmailRequest):
             sender_name="Interview Vault Security"
         )
         
-        print(f"✅ OTP email sent: {result.get('messageId')}")
+        print(f" OTP email sent: {result.get('messageId')}")
         
         return {
             "success": True,
@@ -147,7 +147,7 @@ async def send_otp_email(request: OTPEmailRequest):
         }
         
     except Exception as e:
-        print(f"❌ Error sending OTP email: {str(e)}")
+        print(f" Error sending OTP email: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to send OTP email: {str(e)}")
 
 
@@ -155,7 +155,7 @@ async def send_otp_email(request: OTPEmailRequest):
 async def send_digest_email(request: DigestEmailRequest):
     """Send email digest with dashboard stats"""
     try:
-        print(f"📧 Sending Email Digest to: {request.email}")
+        print(f" Sending Email Digest to: {request.email}")
         print(f"📋 Frequency: {request.frequency}")
         
         frequency_labels = {
@@ -179,15 +179,15 @@ async def send_digest_email(request: DigestEmailRequest):
         result = await send_email_via_brevo(
             to_email=request.email,
             to_name="User",
-            subject=f"📊 Your {frequency_labels.get(request.frequency, 'Scheduled')} Interview Vault Digest",
+            subject=f" Your {frequency_labels.get(request.frequency, 'Scheduled')} Interview Vault Digest",
             html_content=html_content
         )
         
-        print(f"✅ Email Digest sent via Brevo: {result.get('messageId')}")
+        print(f" Email Digest sent via Brevo: {result.get('messageId')}")
         return result
         
     except Exception as e:
-        print(f"❌ Error sending email digest: {str(e)}")
+        print(f" Error sending email digest: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to send email digest: {str(e)}")
 
 
@@ -299,14 +299,14 @@ def _build_digest_email_html(frequency: str, stats: dict, recent_apps: list) -> 
         <div class="container">
             <div class="header">
                 <img src="https://raw.githubusercontent.com/DheerajKumar97/Interview-Vault-BI-Powered-Interview-Tracker-with-ATS-Score-Calculation-Alerts-and-Nofitication/main/public/logo.png" alt="Interview Vault" class="logo">
-                <h1>📊 Your {frequency} Digest</h1>
+                <h1> Your {frequency} Digest</h1>
                 <p style="margin-top: 10px; opacity: 0.95; font-size: 16px;">Application Tracking Summary</p>
             </div>
             <div class="content">
                 <p>Hello,</p>
                 <p>Here's your {frequency.lower()} summary of your interview applications in <strong>Interview Vault</strong>.</p>
                 
-                <h2>📊 Key Metrics</h2>
+                <h2> Key Metrics</h2>
                 {kpi_cards}
 
                 <h2>🕒 Recent Applications</h2>

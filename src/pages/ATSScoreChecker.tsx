@@ -62,8 +62,9 @@ const ATSScoreChecker = () => {
             name
           )
         `)
-                .ilike("current_status", "applied")
                 .eq("user_id", user.id)
+                .not("current_status", "ilike", "ghosted")
+                .not("current_status", "ilike", "rejected")
                 .order("applied_date", { ascending: false });
 
             if (error) throw error;
@@ -389,9 +390,9 @@ const ATSScoreChecker = () => {
                         <div className="text-center py-12 text-muted-foreground">{t("Loading...")}</div>
                     ) : applications.length === 0 ? (
                         <div className="text-center py-12">
-                            <p className="text-muted-foreground mb-4">{t("No 'Applied' applications found")}</p>
+                            <p className="text-muted-foreground mb-4">{t("No applications found")}</p>
                             <p className="text-sm text-muted-foreground mb-4">
-                                {t("Make sure you have applications with 'Applied' status in your Applications page.")}
+                                {t("Add some applications to calculate ATS scores.")}
                             </p>
                             <Button onClick={() => navigate("/applications")} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:from-blue-700 hover:to-purple-700">
                                 <ArrowLeft className="h-4 w-4 mr-2" />

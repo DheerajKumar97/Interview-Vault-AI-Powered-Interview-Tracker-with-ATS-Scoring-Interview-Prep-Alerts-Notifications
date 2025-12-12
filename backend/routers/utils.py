@@ -26,14 +26,14 @@ class UpdateEnvRequest(BaseModel):
 async def validate_email(request: ValidateEmailRequest):
     """Validate email address using DNS MX record lookup"""
     try:
-        print(f"📧 Validating email: {request.email}")
+        print(f" Validating email: {request.email}")
         
         result = await check_email(request.email)
         
         return result
         
     except Exception as e:
-        print(f"❌ Error validating email: {str(e)}")
+        print(f" Error validating email: {str(e)}")
         return {
             "valid": False,
             "email": request.email,
@@ -79,10 +79,10 @@ async def update_env(request: UpdateEnvRequest):
         env_path.write_text(env_content.strip() + '\n')
         
         masked_value = request.value[:5] + "..." if len(request.value) > 5 else request.value
-        print(f'✅ Updated .env file: {request.key}="{masked_value}"')
+        print(f' Updated .env file: {request.key}="{masked_value}"')
         
         return {"success": True, "message": "Environment variable updated"}
         
     except Exception as e:
-        print(f"❌ Error updating .env: {str(e)}")
+        print(f" Error updating .env: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to update environment variable: {str(e)}")

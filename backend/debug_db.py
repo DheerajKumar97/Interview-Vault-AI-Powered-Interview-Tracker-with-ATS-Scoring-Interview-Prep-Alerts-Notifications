@@ -7,7 +7,7 @@ def debug_database():
     
     try:
         # List first 10 applications with user_id
-        print("\n🏢 Listing first 10 applications with User IDs:")
+        print("\n Listing first 10 applications with User IDs:")
         list_response = supabase.table("applications").select("id, name, user_id, current_status").limit(10).execute()
         if list_response.data:
             for idx, app in enumerate(list_response.data):
@@ -16,7 +16,7 @@ def debug_database():
             print("   No applications found.")
 
     except Exception as e:
-        print(f"❌ Error: {str(e)}")
+        print(f" Error: {str(e)}")
 
 if __name__ == "__main__":
     debug_database()

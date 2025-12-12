@@ -1,7 +1,6 @@
 """
 AI Service - Handles AI API calls
 """
-import httpx
 from typing import Optional
 from config import settings
 
@@ -43,7 +42,7 @@ async def call_openai_api(
         )
         return response.choices[0].message.content
     except Exception as e:
-        print(f"❌ OpenAI API Error: {str(e)}")
+        print(f" OpenAI API Error: {str(e)}")
         raise e
 
 

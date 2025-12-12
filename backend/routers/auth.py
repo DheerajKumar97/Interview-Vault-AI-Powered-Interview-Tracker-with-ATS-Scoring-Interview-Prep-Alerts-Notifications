@@ -64,7 +64,7 @@ async def verify_otp(request: VerifyOTPRequest):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ Error verifying OTP: {str(e)}")
+        print(f" Error verifying OTP: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to verify OTP: {str(e)}")
 
 
@@ -89,7 +89,7 @@ async def reset_password(request: ResetPasswordRequest):
         if otp_hash != expected_hash:
             raise HTTPException(status_code=400, detail="Invalid OTP")
         
-        print(f"✅ OTP Verified for: {request.email}")
+        print(f" OTP Verified for: {request.email}")
         
         # Get Supabase admin client
         supabase = get_admin_client()
@@ -112,11 +112,11 @@ async def reset_password(request: ResetPasswordRequest):
             {"password": request.newPassword}
         )
         
-        print(f"✅ Password reset successfully for: {request.email}")
+        print(f" Password reset successfully for: {request.email}")
         return {"success": True, "message": "Password reset successfully"}
         
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ Error resetting password: {str(e)}")
+        print(f" Error resetting password: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to reset password: {str(e)}")

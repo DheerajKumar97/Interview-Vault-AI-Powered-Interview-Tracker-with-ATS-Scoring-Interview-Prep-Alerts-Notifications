@@ -129,8 +129,9 @@ const SkillAnalysis = () => {
             name
           )
         `)
-                .ilike("current_status", "applied")
                 .eq("user_id", user.id)
+                .not("current_status", "ilike", "ghosted")
+                .not("current_status", "ilike", "rejected")
                 .order("applied_date", { ascending: false });
 
             if (error) throw error;

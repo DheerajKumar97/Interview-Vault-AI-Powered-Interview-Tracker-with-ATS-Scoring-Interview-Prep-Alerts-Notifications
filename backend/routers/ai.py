@@ -238,14 +238,14 @@ async def generate_interview_questions(request: InterviewQuestionsRequest):
             clean_json = response_text.replace("```json", "").replace("```", "").strip()
             questions = json.loads(clean_json)
         except json.JSONDecodeError:
-            print("❌ Failed to parse JSON response, falling back to raw text")
+            print(" Failed to parse JSON response, falling back to raw text")
             # If JSON conversion fails, we might want to return a strict error or raw text
             # For now, let's keep it robust by wrapping it in a structure if possible, or just fail
             # But to be safe, we'll error out so the user knows format failed
             raise ValueError("AI failed to generate valid JSON format")
         
         total_time = int((time.time() - start_time) * 1000)
-        print(f"⏱️  Total execution time: {total_time}ms")
+        print(f"  Total execution time: {total_time}ms")
         
         return {
             "success": True,
@@ -258,7 +258,7 @@ async def generate_interview_questions(request: InterviewQuestionsRequest):
     except ValueError as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
-        print(f"❌ Error generating questions: {str(e)}")
+        print(f" Error generating questions: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to generate questions: {str(e)}")
 
 
@@ -313,10 +313,10 @@ async def generate_projects(request: ProjectsRequest):
             clean_json = response_text.replace("```json", "").replace("```", "").strip()
             suggestions = json.loads(clean_json)
         except json.JSONDecodeError:
-            print("❌ Failed to parse JSON project response")
+            print(" Failed to parse JSON project response")
             raise ValueError("AI failed to generate valid JSON format for projects")
         
-        print("✅ Project suggestions generated successfully")
+        print(" Project suggestions generated successfully")
         
         return {
             "success": True,
@@ -328,7 +328,7 @@ async def generate_projects(request: ProjectsRequest):
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
-        print(f"❌ Error generating projects: {str(e)}")
+        print(f" Error generating projects: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to generate projects: {str(e)}")
 
 
@@ -380,13 +380,13 @@ async def chat(request: ChatRequest):
                 greeting_prefix = "Hi" if message_count == 0 else "Hello"
                 return {
                     "success": True,
-                    "response": f"{greeting_prefix}! **{user_name}**,\n\nHow can I help you with Interview Vault today? Feel free to ask about your applications, job statistics, features, or anything else! 👋",
+                    "response": f"{greeting_prefix}! **{user_name}**,\n\nHow can I help you with Interview Vault today? Feel free to ask about your applications, job statistics, features, or anything else! ",
                     "queryType": "greeting"
                 }
             else:
                 return {
                     "success": True,
-                    "response": f"Hello! 👋\n\nWelcome to Interview Vault! I can help answer your questions about our platform. To access personalized features like job application tracking, AI-powered skill analysis, and custom interview preparation, please sign up or log in to start your interview journey!",
+                    "response": f"Hello! \n\nWelcome to Interview Vault! I can help answer your questions about our platform. To access personalized features like job application tracking, AI-powered skill analysis, and custom interview preparation, please sign up or log in to start your interview journey!",
                     "queryType": "greeting"
                 }
 
@@ -424,7 +424,7 @@ async def chat(request: ChatRequest):
                 print(f"🔑 User object: {user}")
 
                 supabase = get_admin_client()
-                print(f"✅ Supabase admin client created")
+                print(f" Supabase admin client created")
 
                 # DEBUG: First query ALL applications to verify DB connection
                 debug_response = supabase.table("applications").select("id, user_id, name").limit(5).execute()
@@ -446,7 +446,7 @@ async def chat(request: ChatRequest):
                 print(f"🔍 Applications fetched: {len(applications)}")
 
                 if applications:
-                    print(f"✅ Applications found:")
+                    print(f" Applications found:")
                     for idx, app in enumerate(applications):
                         print(f"   {idx+1}. {app.get('company_name', 'Unknown')} - {app.get('job_title', 'N/A')}")
                 else:
@@ -510,12 +510,12 @@ async def chat(request: ChatRequest):
 
 **COMPLETE LIST OF COMPANIES (USE THESE EXACT NAMES ONLY):**{company_breakdown}
 
-❌ DO NOT mention any companies not listed above (like Infosys, Exusia Inc, Encora Inc if they're not in the list above)
-✅ ONLY use the company names explicitly shown in the list above
-✅ If user asks for applications/companies, show EXACTLY this data in a clean table format
+ DO NOT mention any companies not listed above (like Infosys, Exusia Inc, Encora Inc if they're not in the list above)
+ ONLY use the company names explicitly shown in the list above
+ If user asks for applications/companies, show EXACTLY this data in a clean table format
 """
                     for status, companies in companies_by_status.items():
-                        print(f"📊 {status}: {[c['company'] for c in companies]}")
+                        print(f" {status}: {[c['company'] for c in companies]}")
                 
                 # Fetch and clean User Resume (with Caching)
                 try:
@@ -541,15 +541,15 @@ async def chat(request: ChatRequest):
                             chat.resume_cache[user_id_str] = cleaned_resume
                             
                             user_resume_context = f"\n\n**USER RESUME:**\n{cleaned_resume}\n"
-                            print("✅ Resume cleaned and added to context (and cached)")
+                            print(" Resume cleaned and added to context (and cached)")
                         else:
                             print("⚠️ No resume found for user")
                 except Exception as resume_error:
-                    print(f"❌ Error fetching/cleaning resume: {str(resume_error)}")
+                    print(f" Error fetching/cleaning resume: {str(resume_error)}")
 
             except Exception as db_error:
-                print(f"❌ Database query error: {db_error}")
-                print(f"❌ Error type: {type(db_error)}")
+                print(f" Database query error: {db_error}")
+                print(f" Error type: {type(db_error)}")
                 import traceback
                 print(traceback.format_exc())
 
@@ -591,20 +591,20 @@ YOU ARE STRICTLY LIMITED TO THESE TOPICS ONLY:
 🚨🚨🚨 CRITICAL - POLICY QUERIES 🚨🚨🚨
 
 When user asks about "policies", "privacy", "terms", "cookies", "do not sell", "ad choices", or similar:
-- ✅ USE ONLY the "INTERVIEW VAULT POLICY KNOWLEDGE BASE" section below
-- ✅ Summarize the relevant policy in a friendly, readable format
-- ✅ Include the support email (interviewvault.2026@gmail.com) if relevant
-- ❌ DO NOT say you don't have policy information
-- ❌ DO NOT give generic out-of-scope responses for policy questions
+-  USE ONLY the "INTERVIEW VAULT POLICY KNOWLEDGE BASE" section below
+-  Summarize the relevant policy in a friendly, readable format
+-  Include the support email (interviewvault.2026@gmail.com) if relevant
+-  DO NOT say you don't have policy information
+-  DO NOT give generic out-of-scope responses for policy questions
 
 🚨🚨🚨 CRITICAL - FOUNDER QUERIES - NO WEB SEARCH 🚨🚨🚨
 
 When user asks ANYTHING about "Dheeraj", "Dheeraj Kumar K", "founder", "creator", "who made this", "who built this":
-- ❌ DO NOT search the web - there is another person named "Dheeraj Kumar" (Indian actor) - NOT THE SAME PERSON!
-- ❌ DO NOT mention any actor, producer, or TV personality
-- ✅ USE ONLY the "About the Founder - Dheeraj Kumar K" section in the APPLICATION_KNOWLEDGE below
-- ✅ The founder has 6+ years experience at Exusia Inc, Encora Inc, Origers Solution
-- ✅ Show the experience table, projects, and accomplishments from APPLICATION_KNOWLEDGE
+-  DO NOT search the web - there is another person named "Dheeraj Kumar" (Indian actor) - NOT THE SAME PERSON!
+-  DO NOT mention any actor, producer, or TV personality
+-  USE ONLY the "About the Founder - Dheeraj Kumar K" section in the APPLICATION_KNOWLEDGE below
+-  The founder has 6+ years experience at Exusia Inc, Encora Inc, Origers Solution
+-  Show the experience table, projects, and accomplishments from APPLICATION_KNOWLEDGE
 
 FOUNDER TRIGGER PHRASES (Use APPLICATION_KNOWLEDGE, NOT web search):
 - "Dheeraj", "Dheeraj Kumar", "Dheeraj Kumar K"
@@ -621,9 +621,9 @@ FOUNDER TRIGGER PHRASES (Use APPLICATION_KNOWLEDGE, NOT web search):
 - Give generic lists of founder competencies
 - Copy-paste the founder data verbatim from APPLICATION_KNOWLEDGE
 
-✅ HOW TO PRESENT FOUNDER INFO ATTRACTIVELY:
+ HOW TO PRESENT FOUNDER INFO ATTRACTIVELY:
 - Present the information in an engaging, conversational tone
-- Use emojis to make sections visually appealing (🚀 💼 🛠️ ✨ 📊)
+- Use emojis to make sections visually appealing (🚀 💼 🛠️ ✨ )
 - Rephrase accomplishments dynamically, don't copy-paste exact text
 - Group related achievements together with compelling headers
 - Highlight impressive numbers (250+ dashboards, 95% reduction, 35% improvement)
@@ -664,7 +664,7 @@ DO NOT say "contact details are private" - these are PUBLIC links that should be
 - Search for any person, movie, show, or media when user sends casual words
 
 WHEN USER SENDS CASUAL GREETINGS/WORDS (e.g., "Dude", "Hey", "Bro", "Man", "Yo", "Hi", "Hello", "Sup"):
-Respond casually and warmly: "Hey **{user_name or 'there'}**! 👋 How can I help you with Interview Vault today?"
+Respond casually and warmly: "Hey **{user_name or 'there'}**!  How can I help you with Interview Vault today?"
 
 FOR ANY OUT-OF-SCOPE QUESTION (movies, sports, general knowledge, entertainment, etc.):
 Respond: "I'm the Interview Vault assistant, so I focus on helping you with job applications, interview prep, and career-related topics! 😊 Is there anything about your applications, resume analysis, or Interview Vault features I can help with?"
@@ -718,7 +718,7 @@ When user sends SHORT conversational words/phrases indicating they're done or re
 For these conversational responses, reply NATURALLY like a friendly assistant:
 - "nope/no/nothing" → "No problem, **{user_name or 'friend'}**! 😊 I'm here whenever you need help. Just ask anytime!"
 - "yes/okay/got it" → "Great! 👍 Let me know if there's anything else I can help you with!"
-- "bye/later" → "Goodbye, **{user_name or 'friend'}**! 👋 Best of luck with your job search. Come back anytime!"
+- "bye/later" → "Goodbye, **{user_name or 'friend'}**!  Best of luck with your job search. Come back anytime!"
 
 ⚠️ NEVER search the web for these words! "Nope" is NOT the movie - it's the user saying "no". "Fine" is NOT about money or penalties - it's "okay".
 
@@ -735,21 +735,21 @@ ADDITIONAL RULES:
 
    **FILTERING RULES - READ CAREFULLY:**
    
-   ✅ **ALWAYS FILTER** based on the user's specific criteria:
+    **ALWAYS FILTER** based on the user's specific criteria:
    - If they ask for "offers" or "offer released" → Filter ONLY companies with status = "Offer Released"
    - If they ask for "selected" → Filter ONLY companies with status = "Selected"
    - If they ask for "interviews" or "scheduled" → Filter ONLY companies with status = "Interview Scheduled"
    - If they ask for "rejected" → Filter ONLY companies with status = "Rejected"
    - If they ask for ALL companies → Show all from the database list below
    
-   ✅ **EXTRACT AND DISPLAY:**
+    **EXTRACT AND DISPLAY:**
    - Company names matching the criteria
    - Position/title
    - Status
    - Applied date
    - HR contact details (name, phone, email) if available and requested
    
-   ❌ **DO NOT:**
+    **DO NOT:**
    - Show ALL companies when user asks for specific status
    - Make up company names not in the database below
    - Use placeholder data
@@ -843,7 +843,7 @@ Respond naturally and helpfully using ONLY the information provided above.
             if "sign up" not in response_text.lower() and "log in" not in response_text.lower():
                 response_text += "\n\nWant to unlock more features? Sign up or log in to access personalized job tracking, AI-powered skill analysis, and interview preparation tools!"
 
-        print("✅ LLM response generated successfully")
+        print(" LLM response generated successfully")
 
         return {
             "success": True,
@@ -862,8 +862,8 @@ Respond naturally and helpfully using ONLY the information provided above.
         }
     except Exception as e:
         import traceback
-        print(f"❌ Error in chat: {str(e)}")
-        print(f"❌ Full traceback:\n{traceback.format_exc()}")
+        print(f" Error in chat: {str(e)}")
+        print(f" Full traceback:\n{traceback.format_exc()}")
         # Return fallback response instead of 500 error for better UX
         fallback_response = f"Sure **{user_name or 'there'}**,\n\nI'm experiencing some technical difficulties, but I'm still here to help. Please try asking your question again, or contact support at interviewvault.2026@gmail.com if the issue persists."
         return {

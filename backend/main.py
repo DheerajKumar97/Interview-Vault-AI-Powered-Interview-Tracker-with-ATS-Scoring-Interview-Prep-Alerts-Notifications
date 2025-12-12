@@ -14,27 +14,27 @@ from fastapi.responses import FileResponse, JSONResponse
 from config import settings
 
 # Import routers
-from routers import email, auth, ai, utils
+from routers import email, auth, ai, utils, analytics
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup and shutdown events"""
     # Startup
-    print("✅ Interview Vault Python Backend starting...")
+    print(" Interview Vault Python Backend starting...")
     print(f"   Environment: {settings.NODE_ENV}")
     print(f"   Port: {settings.PORT}")
     
     # Validate environment variables
     validation = settings.validate()
     for key, is_set in validation.items():
-        status = "✅" if is_set else "❌"
+        status = "" if is_set else ""
         print(f"   {status} {key}: {'Found' if is_set else 'Missing'}")
     
     yield
     
     # Shutdown
-    print("👋 Interview Vault Python Backend shutting down...")
+    print(" Interview Vault Python Backend shutting down...")
 
 
 # Create FastAPI app
@@ -59,6 +59,7 @@ app.include_router(email.router, prefix="/api", tags=["Email"])
 app.include_router(auth.router, prefix="/api", tags=["Auth"])
 app.include_router(ai.router, prefix="/api", tags=["AI"])
 app.include_router(utils.router, prefix="/api", tags=["Utils"])
+app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
 
 
 # Health check endpoint
@@ -101,7 +102,7 @@ if settings.is_production():
             
             return JSONResponse({"error": "Not found"}, status_code=404)
         
-        print("✅ Serving React build from /dist")
+        print(" Serving React build from /dist")
 
 
 # Run with uvicorn in development

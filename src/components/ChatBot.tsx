@@ -252,6 +252,50 @@ export default function ChatBot() {
             '<div class="inline-flex items-start gap-2 px-3 py-2 my-1 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 hover:bg-gradient-to-r hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 rounded-lg border border-blue-300 dark:border-blue-600 shadow-sm hover:shadow-md transition-all"><span class="font-semibold text-blue-700 dark:text-blue-300">$1</span><span class="text-gray-600 dark:text-gray-400 text-sm ml-1">– $2</span></div>'
         );
 
+        // Format statistics/metrics with percentage values as styled cards
+        // Pattern: "• Status: X/Y = Z%" or "Status: X/Y = Z%"
+        formatted = formatted.replace(
+            /[•\-]\s*\*?\*?([^:]+):\*?\*?\s*(\d+\/\d+)\s*=\s*([\d.]+%)/g,
+            (match, status, fraction, percentage) => {
+                const pct = parseFloat(percentage);
+                let bgColor = 'from-gray-50 to-gray-100 border-gray-300';
+                let textColor = 'text-gray-700';
+                let pctColor = 'text-gray-600';
+
+                // Color coding based on status type
+                const statusLower = status.trim().toLowerCase();
+                if (statusLower.includes('offer') || statusLower.includes('selected')) {
+                    bgColor = 'from-green-50 to-emerald-50 border-green-300';
+                    textColor = 'text-green-800';
+                    pctColor = 'text-green-600 font-bold';
+                } else if (statusLower.includes('interview') || statusLower.includes('shortlist')) {
+                    bgColor = 'from-blue-50 to-indigo-50 border-blue-300';
+                    textColor = 'text-blue-800';
+                    pctColor = 'text-blue-600 font-bold';
+                } else if (statusLower.includes('hr') || statusLower.includes('screening')) {
+                    bgColor = 'from-purple-50 to-violet-50 border-purple-300';
+                    textColor = 'text-purple-800';
+                    pctColor = 'text-purple-600 font-bold';
+                } else if (statusLower.includes('applied')) {
+                    bgColor = 'from-cyan-50 to-sky-50 border-cyan-300';
+                    textColor = 'text-cyan-800';
+                    pctColor = 'text-cyan-600 font-bold';
+                } else if (statusLower.includes('reject') || statusLower.includes('ghost')) {
+                    bgColor = 'from-red-50 to-rose-50 border-red-300';
+                    textColor = 'text-red-800';
+                    pctColor = 'text-red-600 font-bold';
+                }
+
+                return `<div class="flex items-center justify-between px-4 py-3 my-2 bg-gradient-to-r ${bgColor} rounded-xl border shadow-sm hover:shadow-md transition-all">
+                    <span class="font-semibold ${textColor}">${status.trim()}</span>
+                    <div class="flex items-center gap-3">
+                        <span class="text-gray-500 text-sm">${fraction}</span>
+                        <span class="px-3 py-1 bg-white/80 rounded-lg ${pctColor} text-lg shadow-inner">${percentage}</span>
+                    </div>
+                </div>`;
+            }
+        );
+
         // Convert bullet point markers to proper HTML bullets
         formatted = formatted.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
 

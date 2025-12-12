@@ -192,12 +192,12 @@ def get_signup_email_html(full_name: str, email: str) -> str:
                 
                 <div class="features-grid">
                     <div class="feature-card">
-                        <span class="feature-icon">📊</span>
+                        <span class="feature-icon"></span>
                         <span class="feature-title">Track Applications</span>
                         <span class="feature-desc">All your applications in one organized dashboard</span>
                     </div>
                     <div class="feature-card">
-                        <span class="feature-icon">📅</span>
+                        <span class="feature-icon"></span>
                         <span class="feature-title">Schedule Interviews</span>
                         <span class="feature-desc">Never miss a meeting with built-in calendar</span>
                     </div>

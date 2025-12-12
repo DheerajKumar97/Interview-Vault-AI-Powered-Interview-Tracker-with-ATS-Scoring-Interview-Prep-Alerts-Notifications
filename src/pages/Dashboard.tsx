@@ -67,6 +67,67 @@ interface DashboardData {
   timelineData: any[];
 }
 
+interface AnalyticsData {
+  stageConversionRates: {
+    applied: number;
+    progressed: number;
+    shortlisted: number;
+    interviewed: number;
+    selected: number;
+    offers: number;
+    response_rate: number;
+    shortlist_rate: number;
+    interview_rate: number;
+    selection_rate: number;
+    offer_rate: number;
+    overall_success_rate: number;
+  } | null;
+  byIndustry: Array<{
+    industry: string;
+    total_apps: number;
+    responses: number;
+    interviews: number;
+    offers: number;
+    response_rate: number;
+    interview_rate: number;
+    offer_rate: number;
+  }>;
+  byDayOfWeek: Array<{
+    day_of_week: string;
+    day_num: number;
+    applications: number;
+    responses: number;
+    interviews: number;
+    offers: number;
+    response_rate: number;
+    interview_rate: number;
+  }>;
+  timeToHire: Array<{
+    transition: string;
+    avg_days: number;
+    median_days: number;
+    min_days: number;
+    max_days: number;
+    sample_size: number;
+  }>;
+  byCompanySize: Array<{
+    company_size: string;
+    total_apps: number;
+    interviews: number;
+    offers: number;
+    interview_rate: number;
+    offer_rate: number;
+  }>;
+  atsCorrelation: Array<{
+    score_range: string;
+    total_apps: number;
+    interviews: number;
+    offers: number;
+    interview_rate: number;
+    offer_rate: number;
+  }>;
+}
+
 const COLORS = {
   "HR Screening Done": "hsl(217 91% 60%)", // Blue
   "Shortlisted": "hsl(280 65% 60%)", // Purple
@@ -107,6 +168,15 @@ const Dashboard = () => {
   const [selectedHour, setSelectedHour] = useState<string>("9");
   const [selectedMinute, setSelectedMinute] = useState<string>("00");
   const [selectedPeriod, setSelectedPeriod] = useState<string>("AM");
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
+    stageConversionRates: null,
+    byIndustry: [],
+    byDayOfWeek: [],
+    timeToHire: [],
+    byCompanySize: [],
+    atsCorrelation: []
+  });
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   useEffect(() => {
     fetchCompanies();
@@ -114,6 +184,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    fetchAnalyticsData();
   }, [selectedCompanies]);
 
   const fetchCompanies = async () => {
@@ -256,6 +327,64 @@ const Dashboard = () => {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAnalyticsData = async () => {
+    setAnalyticsLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setAnalyticsLoading(false);
+        return;
+      }
+
+      // Fetch all analytics in parallel
+      const [convRates, industry, dayOfWeek, timeHire, companySize, atsCorr] = await Promise.all([
+        fetch(`${API_BASE_URL}/analytics/stage-conversion-rates`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: user.id })
+        }).then(r => r.json()).catch(() => ({ data: null })),
+        fetch(`${API_BASE_URL}/analytics/by-industry`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: user.id })
+        }).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE_URL}/analytics/by-day-of-week`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: user.id })
+        }).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE_URL}/analytics/time-to-hire`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: user.id })
+        }).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE_URL}/analytics/by-company-size`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: user.id })
+        }).then(r => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_BASE_URL}/analytics/ats-correlation`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: user.id })
+        }).then(r => r.json()).catch(() => ({ data: [] }))
+      ]);
+
+      setAnalyticsData({
+        stageConversionRates: convRates?.data || null,
+        byIndustry: industry?.data || [],
+        byDayOfWeek: dayOfWeek?.data || [],
+        timeToHire: timeHire?.data || [],
+        byCompanySize: companySize?.data || [],
+        atsCorrelation: atsCorr?.data || []
+      });
+    } catch (error: any) {
+      console.error('Failed to fetch analytics:', error);
+    } finally {
+      setAnalyticsLoading(false);
     }
   };
 
@@ -669,6 +798,54 @@ const Dashboard = () => {
                 />
               </div>
 
+              {/* Conversion Rate KPIs */}
+              {!analyticsLoading && analyticsData.stageConversionRates && (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                  <Card className="glass-card bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-xs text-blue-600 font-medium">Response Rate</p>
+                      <p className="text-2xl font-bold text-blue-700">{analyticsData.stageConversionRates.response_rate}%</p>
+                      <p className="text-xs text-gray-500">{analyticsData.stageConversionRates.progressed}/{analyticsData.stageConversionRates.applied}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="glass-card bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-xs text-purple-600 font-medium">Shortlist Rate</p>
+                      <p className="text-2xl font-bold text-purple-700">{analyticsData.stageConversionRates.shortlist_rate}%</p>
+                      <p className="text-xs text-gray-500">{analyticsData.stageConversionRates.shortlisted}/{analyticsData.stageConversionRates.applied}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="glass-card bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-xs text-indigo-600 font-medium">Interview Rate</p>
+                      <p className="text-2xl font-bold text-indigo-700">{analyticsData.stageConversionRates.interview_rate}%</p>
+                      <p className="text-xs text-gray-500">{analyticsData.stageConversionRates.interviewed}/{analyticsData.stageConversionRates.applied}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="glass-card bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-xs text-green-600 font-medium">Selection Rate</p>
+                      <p className="text-2xl font-bold text-green-700">{analyticsData.stageConversionRates.selection_rate}%</p>
+                      <p className="text-xs text-gray-500">{analyticsData.stageConversionRates.selected}/{analyticsData.stageConversionRates.interviewed}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="glass-card bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-xs text-emerald-600 font-medium">Offer Rate</p>
+                      <p className="text-2xl font-bold text-emerald-700">{analyticsData.stageConversionRates.offer_rate}%</p>
+                      <p className="text-xs text-gray-500">{analyticsData.stageConversionRates.offers}/{analyticsData.stageConversionRates.interviewed}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="glass-card bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-xs text-amber-600 font-medium">Overall Success</p>
+                      <p className="text-2xl font-bold text-amber-700">{analyticsData.stageConversionRates.overall_success_rate}%</p>
+                      <p className="text-xs text-gray-500">{analyticsData.stageConversionRates.offers}/{analyticsData.stageConversionRates.applied}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
               {/* Charts Row 1 */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Funnel Chart - Takes 2/3 width */}
@@ -963,6 +1140,197 @@ const Dashboard = () => {
                   </Card>
                 )}
               </div>
+
+              {/* Advanced Analytics Section */}
+              {!analyticsLoading && analyticsData.stageConversionRates && (
+                <div className="space-y-4 mt-6">
+
+                  {/* Time to Hire Stats */}
+                  {analyticsData.timeToHire.length > 0 && (
+                    <Card className="glass-card border-white/20 bg-white/95 shadow-2xl">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">
+                          ⏱️ Time to Each Stage (Days)
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pb-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {analyticsData.timeToHire.map((stat) => (
+                            <div key={stat.transition} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200">
+                              <p className="text-xs text-gray-600 font-medium mb-1">{stat.transition}</p>
+                              <div className="flex items-baseline gap-2">
+                                <p className="text-xl font-bold text-gray-800">{stat.avg_days}</p>
+                                <p className="text-xs text-gray-500">avg days</p>
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                <span>Median: {stat.median_days}d</span>
+                                <span className="mx-1">•</span>
+                                <span>Range: {stat.min_days}-{stat.max_days}d</span>
+                              </div>
+                              <p className="text-xs text-purple-600 mt-1">{stat.sample_size} samples</p>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Charts Row */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Success by Industry */}
+                    {analyticsData.byIndustry.length > 0 && (
+                      <Card className="glass-card border-white/20 bg-white/95 shadow-2xl">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">
+                            🏢 Success Rate by Industry
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pb-4">
+                          <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={analyticsData.byIndustry.slice(0, 6)} layout="vertical">
+                              <CartesianGrid strokeDasharray="3 3" opacity={0.2} horizontal={false} />
+                              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10 }} />
+                              <YAxis type="category" dataKey="industry" width={100} tick={{ fontSize: 10 }} />
+                              <Tooltip
+                                content={({ active, payload }) => {
+                                  if (active && payload && payload.length) {
+                                    const d = payload[0].payload;
+                                    return (
+                                      <div className="glass-card p-3 bg-white/98 shadow-xl border-gray-200">
+                                        <p className="font-bold text-sm">{d.industry}</p>
+                                        <p className="text-xs">Apps: {d.total_apps} | Interviews: {d.interviews} | Offers: {d.offers}</p>
+                                        <p className="text-xs text-purple-600">Offer Rate: {d.offer_rate}%</p>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                }}
+                              />
+                              <Bar dataKey="offer_rate" fill="hsl(142 71% 45%)" radius={[0, 8, 8, 0]} name="Offer Rate %" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Success by Day of Week */}
+                    {analyticsData.byDayOfWeek.length > 0 && (
+                      <Card className="glass-card border-white/20 bg-white/95 shadow-2xl">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">
+                            📅 Best Day to Apply
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pb-4">
+                          <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={analyticsData.byDayOfWeek}>
+                              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                              <XAxis dataKey="day_of_week" tick={{ fontSize: 10 }} />
+                              <YAxis tick={{ fontSize: 10 }} />
+                              <Tooltip
+                                content={({ active, payload }) => {
+                                  if (active && payload && payload.length) {
+                                    const d = payload[0].payload;
+                                    return (
+                                      <div className="glass-card p-3 bg-white/98 shadow-xl border-gray-200">
+                                        <p className="font-bold text-sm">{d.day_of_week}</p>
+                                        <p className="text-xs">Applications: {d.applications}</p>
+                                        <p className="text-xs">Response Rate: {d.response_rate}%</p>
+                                        <p className="text-xs text-purple-600">Interview Rate: {d.interview_rate}%</p>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                }}
+                              />
+                              <Bar dataKey="applications" fill="hsl(217 91% 60%)" radius={[8, 8, 0, 0]} name="Applications" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+
+                  {/* Second Charts Row */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Success by Company Size */}
+                    {analyticsData.byCompanySize.length > 0 && (
+                      <Card className="glass-card border-white/20 bg-white/95 shadow-2xl">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">
+                            📏 Success by Company Size
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pb-4">
+                          <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={analyticsData.byCompanySize}>
+                              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                              <XAxis dataKey="company_size" tick={{ fontSize: 9 }} angle={-15} textAnchor="end" height={60} />
+                              <YAxis tick={{ fontSize: 10 }} />
+                              <Tooltip
+                                content={({ active, payload }) => {
+                                  if (active && payload && payload.length) {
+                                    const d = payload[0].payload;
+                                    return (
+                                      <div className="glass-card p-3 bg-white/98 shadow-xl border-gray-200">
+                                        <p className="font-bold text-sm">{d.company_size}</p>
+                                        <p className="text-xs">Total: {d.total_apps} | Interviews: {d.interviews}</p>
+                                        <p className="text-xs text-green-600">Interview Rate: {d.interview_rate}%</p>
+                                        <p className="text-xs text-purple-600">Offer Rate: {d.offer_rate}%</p>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                }}
+                              />
+                              <Bar dataKey="interview_rate" fill="hsl(280 65% 60%)" radius={[8, 8, 0, 0]} name="Interview Rate %" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* ATS Score Correlation */}
+                    {analyticsData.atsCorrelation.length > 0 && (
+                      <Card className="glass-card border-white/20 bg-white/95 shadow-2xl">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent font-bold">
+                            🎯 ATS Score vs. Success
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pb-4">
+                          <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={analyticsData.atsCorrelation}>
+                              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                              <XAxis dataKey="score_range" tick={{ fontSize: 9 }} angle={-10} textAnchor="end" height={50} />
+                              <YAxis tick={{ fontSize: 10 }} domain={[0, 100]} />
+                              <Tooltip
+                                content={({ active, payload }) => {
+                                  if (active && payload && payload.length) {
+                                    const d = payload[0].payload;
+                                    return (
+                                      <div className="glass-card p-3 bg-white/98 shadow-xl border-gray-200">
+                                        <p className="font-bold text-sm">{d.score_range}</p>
+                                        <p className="text-xs">Total: {d.total_apps} apps</p>
+                                        <p className="text-xs text-blue-600">Interview Rate: {d.interview_rate}%</p>
+                                        <p className="text-xs text-green-600">Offer Rate: {d.offer_rate}%</p>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                }}
+                              />
+                              <Legend />
+                              <Bar dataKey="interview_rate" fill="hsl(217 91% 60%)" radius={[8, 8, 0, 0]} name="Interview %" />
+                              <Bar dataKey="offer_rate" fill="hsl(142 71% 45%)" radius={[8, 8, 0, 0]} name="Offer %" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
