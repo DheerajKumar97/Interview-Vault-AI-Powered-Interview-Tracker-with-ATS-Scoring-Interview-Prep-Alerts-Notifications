@@ -30,3 +30,7 @@ apscheduler==3.10.4
 
 # AI Providers
 openai>=1.0.0
+
+# RAG Vector Search
+faiss-cpu>=1.7.4
+numpy>=1.24.0

@@ -173,8 +173,55 @@ export default function ChatBot() {
         formatted = formatted.replace(/\s+(target|class|style)="[^"]*"/g, '');
 
         // Remove any broken link tags
-        formatted = formatted.replace(/Link"\s*>/g, '');
         formatted = formatted.replace(/<">/g, '');
+
+        // Fix unwanted spacing in table cells (e.g., "Senior — Data" -> "Senior Data")
+        // This handles em-dashes that shouldn't be there
+        formatted = formatted.replace(/(\w)\s*—\s*(\w)/g, '$1 $2');
+        formatted = formatted.replace(/(\w)\s*–\s*(\w)/g, '$1 $2');
+
+        // Normalize multiple spaces to single space
+        formatted = formatted.replace(/  +/g, ' ');
+
+        // Convert LaTeX formulas to readable HTML
+        // Handle \frac{num}{denom} -> (num / denom)
+        formatted = formatted.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1 / $2)');
+
+        // Handle \text{...} -> just the text
+        formatted = formatted.replace(/\\text\{([^}]+)\}/g, '$1');
+
+        // Handle \left( and \right) -> just parentheses
+        formatted = formatted.replace(/\\left\(/g, '(');
+        formatted = formatted.replace(/\\right\)/g, ')');
+
+        // Handle \times -> ×
+        formatted = formatted.replace(/\\times/g, '×');
+
+        // Handle \approx -> ≈
+        formatted = formatted.replace(/\\approx/g, '≈');
+
+        // Handle \% -> %
+        formatted = formatted.replace(/\\%/g, '%');
+
+        // Handle display math blocks \[ ... \] -> formatted div
+        formatted = formatted.replace(/\\\[([\s\S]*?)\\\]/g, (match, formula) => {
+            // Clean up the formula
+            let cleanFormula = formula.trim();
+            cleanFormula = cleanFormula.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1 / $2)');
+            cleanFormula = cleanFormula.replace(/\\text\{([^}]+)\}/g, '$1');
+            cleanFormula = cleanFormula.replace(/\\left\(/g, '(');
+            cleanFormula = cleanFormula.replace(/\\right\)/g, ')');
+            cleanFormula = cleanFormula.replace(/\\times/g, '×');
+            cleanFormula = cleanFormula.replace(/\\approx/g, '≈');
+            cleanFormula = cleanFormula.replace(/\\%/g, '%');
+            cleanFormula = cleanFormula.replace(/\n/g, ' ');
+            cleanFormula = cleanFormula.replace(/\s+/g, ' ').trim();
+
+            return `<div class="my-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-700 font-mono text-sm text-blue-800 dark:text-blue-200">${cleanFormula}</div>`;
+        });
+
+        // Handle inline math $...$ -> styled span
+        formatted = formatted.replace(/\$([^$]+)\$/g, '<span class="font-mono bg-gray-100 dark:bg-gray-700 px-1 rounded">$1</span>');
 
         // Convert markdown tables to HTML tables
         const tableRegex = /\|(.+)\|\n\|[-:\s|]+\|\n((?:\|.+\|\n?)+)/g;

@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from config import settings
 from services.ai_service import call_openai_api, truncate_text
 from services.supabase_service import get_admin_client
+from services.rag_service import search_user_context
 from Policy_Knowledge_Base import get_policy_knowledge_base
 
 router = APIRouter()
@@ -337,7 +338,7 @@ async def chat(request: ChatRequest):
     """LLM-powered chatbot with user context"""
     try:
         print(f"\n{'='*80}")
-        print(f"🚀 NEW CHAT REQUEST RECEIVED")
+        print(f" NEW CHAT REQUEST RECEIVED")
         print(f"{'='*80}")
 
         if not request.message:
@@ -347,13 +348,13 @@ async def chat(request: ChatRequest):
         user = request.user or {}
         lower_message = message.lower().strip()
 
-        print(f"💬 Chat request: {message}")
-        print(f"👤 Raw user object from request: {request.user}")
-        print(f"👤 Processed user object: {user}")
-        print(f"👤 User authenticated: {user.get('isAuthenticated')}")
-        print(f"👤 User ID: {user.get('id')}")
-        print(f"👤 User name: {user.get('name')}")
-        print(f"👤 User email: {user.get('email')}")
+        print(f" Chat request: {message}")
+        print(f" Raw user object from request: {request.user}")
+        print(f" Processed user object: {user}")
+        print(f" User authenticated: {user.get('isAuthenticated')}")
+        print(f" User ID: {user.get('id')}")
+        print(f" User name: {user.get('name')}")
+        print(f" User email: {user.get('email')}")
         print(f"{'='*80}\n")
 
         user_name = user.get("name") if user.get("isAuthenticated") else None
@@ -412,23 +413,23 @@ async def chat(request: ChatRequest):
         applications = []  # Initialize to empty list
 
         # DEBUG: Print user object before auth check (v2 - timestamp: 21:36)
-        print(f"🧪🧪🧪 DEBUG v2 BEFORE AUTH CHECK 🧪🧪🧪", flush=True)
-        print(f"🧪 User object: {user}", flush=True)
-        print(f"🧪 isAuthenticated: {user.get('isAuthenticated')}, type: {type(user.get('isAuthenticated'))}", flush=True)
-        print(f"🧪 id: {user.get('id')}", flush=True)
+        print(f" DEBUG v2 BEFORE AUTH CHECK ", flush=True)
+        print(f" User object: {user}", flush=True)
+        print(f" isAuthenticated: {user.get('isAuthenticated')}, type: {type(user.get('isAuthenticated'))}", flush=True)
+        print(f" id: {user.get('id')}", flush=True)
         
         if user.get("isAuthenticated") and user.get("id"):
             try:
-                print(f"🔑 User authenticated: {user.get('isAuthenticated')}")
-                print(f"🔑 User ID: {user.get('id')}")
-                print(f"🔑 User object: {user}")
+                print(f" User authenticated: {user.get('isAuthenticated')}")
+                print(f" User ID: {user.get('id')}")
+                print(f" User object: {user}")
 
                 supabase = get_admin_client()
                 print(f" Supabase admin client created")
 
                 # DEBUG: First query ALL applications to verify DB connection
                 debug_response = supabase.table("applications").select("id, user_id, name").limit(5).execute()
-                print(f"🔍 DEBUG - All applications (limit 5): {debug_response.data}")
+                print(f" DEBUG - All applications (limit 5): {debug_response.data}")
                 if debug_response.data:
                     for app in debug_response.data:
                         print(f"   📋 App: {app.get('name')}, user_id: {app.get('user_id')}")
@@ -436,14 +437,14 @@ async def chat(request: ChatRequest):
                 # Now query for this specific user
                 response = supabase.table("applications").select("*").eq("user_id", user["id"]).execute()
 
-                print(f"📦 Raw Supabase response: {response}")
-                print(f"📦 Response data type: {type(response.data)}")
-                print(f"📦 Response data: {response.data}")
+                print(f" Raw Supabase response: {response}")
+                print(f" Response data type: {type(response.data)}")
+                print(f" Response data: {response.data}")
 
                 applications = response.data or []
 
-                print(f"🔍 Database query executed for user: {user.get('id')}")
-                print(f"🔍 Applications fetched: {len(applications)}")
+                print(f" Database query executed for user: {user.get('id')}")
+                print(f" Applications fetched: {len(applications)}")
 
                 if applications:
                     print(f" Applications found:")
@@ -555,6 +556,38 @@ async def chat(request: ChatRequest):
 
         # Fetch policy knowledge base (must be done before building the f-string)
         policy_knowledge = await get_policy_knowledge_base()
+
+        # ═══════════════════════════════════════════════════════════════
+        # RAG: SEMANTIC SEARCH FOR RELEVANT CONTEXT
+        # ═══════════════════════════════════════════════════════════════
+        rag_context = ""
+        if user.get("isAuthenticated") and user.get("id"):
+            try:
+                print(f"RAG: Starting semantic search for query: '{message[:50]}...'")
+                
+                # Get cleaned resume text (from cache or direct)
+                cleaned_resume = ""
+                if hasattr(chat, "resume_cache") and str(user["id"]) in chat.resume_cache:
+                    cleaned_resume = chat.resume_cache[str(user["id"])]
+                
+                # Perform RAG search
+                retrieved_chunks, rag_context = await search_user_context(
+                    user_id=str(user["id"]),
+                    query=message,
+                    applications=applications,
+                    resume_text=cleaned_resume,
+                    application_knowledge=APPLICATION_KNOWLEDGE,
+                    policy_knowledge=policy_knowledge,
+                    top_k=5
+                )
+                
+                print(f"RAG: Retrieved {len(retrieved_chunks)} relevant chunks")
+                
+            except Exception as rag_error:
+                print(f"RAG Error (falling back to full context): {str(rag_error)}")
+                import traceback
+                print(traceback.format_exc())
+                rag_context = ""  # Fallback handled below
 
         # Build system prompt with comprehensive rules
         system_prompt = f"""🚨🚨🚨 CRITICAL RULE #1 - READ THIS IMMEDIATELY 🚨🚨🚨
@@ -793,7 +826,9 @@ Respond naturally and helpfully using ONLY the information provided above.
 
 {policy_knowledge}
 
-{user_resume_context}"""
+{user_resume_context}
+
+{rag_context}"""
 
         response_text = await call_openai_api(
             prompt=message,
@@ -853,7 +888,7 @@ Respond naturally and helpfully using ONLY the information provided above.
         
     except ValueError as e:
         # Fallback if LLM API key missing or similar config error
-        print(f"⚠️ Chat ValueError: {str(e)}")
+        print(f"Chat ValueError: {str(e)}")
         fallback_response = f"Hello! **{user_name or 'there'}**,\n\nI'm here to help with Interview Vault! Ask me about your applications, features, policies, or anything else. 😊"
         return {
             "success": True,
