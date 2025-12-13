@@ -627,7 +627,7 @@ async def chat(request: ChatRequest):
             if hasattr(chat, "resume_cache") and user.get("id") and str(user["id"]) in chat.resume_cache:
                 resume_text_for_agent = chat.resume_cache[str(user["id"])]
             
-            web_response, citations = await get_web_agent_response(
+            web_response, citations, reasoning_steps = await get_web_agent_response(
                 query=message, 
                 user_name=user_name,
                 resume_text=resume_text_for_agent,
@@ -649,7 +649,8 @@ async def chat(request: ChatRequest):
                 "success": True,
                 "response": web_response,
                 "queryType": "web_agent",
-                "webSources": citations
+                "webSources": citations,
+                "reasoningSteps": reasoning_steps  # Pass to frontend for display
             }
 
         # Build system prompt with comprehensive rules

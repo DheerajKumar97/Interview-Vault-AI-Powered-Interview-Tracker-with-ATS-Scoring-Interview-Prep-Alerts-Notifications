@@ -26,8 +26,11 @@ export default function ChatBot() {
     const [isLoading, setIsLoading] = useState(false);
     const [userMessageCount, setUserMessageCount] = useState(0);
     const [pendingWebAgentQuery, setPendingWebAgentQuery] = useState<string | null>(null);
+    const [reasoningSteps, setReasoningSteps] = useState<string[]>([]);
+    const [showReasoning, setShowReasoning] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const reasoningEndRef = useRef<HTMLDivElement>(null);
 
     // LocalStorage helper functions
     const getChatStorageKey = (userId: string | null) => `interview_vault_chat_${userId || 'guest'}`;
@@ -553,17 +556,12 @@ export default function ChatBot() {
         setIsLoading(true);
         setPendingWebAgentQuery(null);
 
+        // Show reasoning container with initial step
+        setShowReasoning(true);
+        setReasoningSteps(['🔍 Starting web agent...', '📋 Analyzing your profile...']);
+
         try {
             const { data: { user } } = await supabase.auth.getUser();
-
-            // Add a loading message
-            const searchingMessage: Message = {
-                id: Date.now().toString(),
-                text: '🔍 **Searching the web...**',
-                sender: 'bot',
-                timestamp: new Date(),
-            };
-            setMessages(prev => [...prev, searchingMessage]);
 
             const response = await axios.post(`${API_BASE_URL}/chat`, {
                 message: query,
@@ -578,10 +576,22 @@ export default function ChatBot() {
                     isAuthenticated: false,
                     messageCount: userMessageCount
                 },
-                useWebAgent: true  // Trigger web search
+                useWebAgent: true
             });
 
-            // Remove the searching message and add the actual response
+            // Show actual reasoning steps from backend
+            if (response.data.reasoningSteps && response.data.reasoningSteps.length > 0) {
+                setReasoningSteps(response.data.reasoningSteps);
+                // Keep showing for 3 seconds to see all actual steps
+                setTimeout(() => {
+                    setShowReasoning(false);
+                    setReasoningSteps([]);
+                }, 3000);
+            } else {
+                setShowReasoning(false);
+                setReasoningSteps([]);
+            }
+
             const webAgentMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 text: response.data.response,
@@ -590,23 +600,26 @@ export default function ChatBot() {
             };
 
             setMessages(prev => {
-                // Remove the searching message
-                const filtered = prev.filter(m => m.text !== '🔍 **Searching the web...**');
-                const newMessages = [...filtered, webAgentMessage];
+                const newMessages = [...prev, webAgentMessage];
                 saveChatToStorage(user?.id || null, newMessages);
                 return newMessages;
             });
         } catch (error) {
             console.error('Error in web agent search:', error);
+            setReasoningSteps(prev => [...prev, '❌ Error occurred']);
+            setTimeout(() => {
+                setShowReasoning(false);
+                setReasoningSteps([]);
+            }, 1000);
+
             setMessages(prev => {
-                const filtered = prev.filter(m => m.text !== '🔍 **Searching the web...**');
                 const errorMsg: Message = {
                     id: (Date.now() + 1).toString(),
-                    text: "I'm sorry, the web search failed. Please try again.",
+                    text: "I encountered an error while searching. Please try again.",
                     sender: 'bot',
                     timestamp: new Date(),
                 };
-                return [...filtered, errorMsg];
+                return [...prev, errorMsg];
             });
         } finally {
             setIsLoading(false);
@@ -732,6 +745,28 @@ export default function ChatBot() {
                             <div ref={messagesEndRef} />
                         </div>
                     </ScrollArea>
+
+                    {/* Reasoning Container - Shows during web agent search */}
+                    {showReasoning && reasoningSteps.length > 0 && (
+                        <div className="mx-4 mb-2 p-3 bg-gray-900 dark:bg-gray-950 rounded-lg border border-purple-500/30 shadow-lg">
+                            <div className="flex items-center gap-2 mb-2 text-purple-400 text-sm font-medium">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>🧠 Agent Reasoning</span>
+                            </div>
+                            <div className="max-h-32 overflow-y-auto space-y-1 text-xs font-mono">
+                                {reasoningSteps.map((step, index) => (
+                                    <div
+                                        key={index}
+                                        className="text-gray-300 animate-fade-in py-0.5"
+                                        style={{ animationDelay: `${index * 100}ms` }}
+                                    >
+                                        {step}
+                                    </div>
+                                ))}
+                                <div ref={reasoningEndRef} />
+                            </div>
+                        </div>
+                    )}
 
                     {/* Input */}
                     <div className="p-4 border-t bg-gray-50 dark:bg-gray-900">

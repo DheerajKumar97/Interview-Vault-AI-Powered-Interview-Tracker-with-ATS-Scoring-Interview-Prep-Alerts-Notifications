@@ -117,7 +117,7 @@ def should_trigger_web_agent(message: str, rag_found_relevant: bool = False) -> 
     # about EXTERNAL info (company culture) even though they have internal data (their application)
     for keyword in WEB_AGENT_TRIGGER_KEYWORDS:
         if keyword in lower_message:
-            print(f"🌐 Web Agent trigger matched: '{keyword}' in message")
+            print(f" Web Agent trigger matched: '{keyword}' in message")
             return True
     
     return False
@@ -139,7 +139,7 @@ async def search_web(query: str, max_results: int = 5) -> List[Dict[str, Any]]:
         List of search results with title, url, and content
     """
     if not settings.TAVILY_API_KEY:
-        print("⚠️ TAVILY_API_KEY not configured - web search disabled")
+        print(" TAVILY_API_KEY not configured - web search disabled")
         return []
     
     try:
@@ -179,14 +179,14 @@ async def search_web(query: str, max_results: int = 5) -> List[Dict[str, Any]]:
                 "score": result.get("score", 0)
             })
         
-        print(f"🌐 Web search returned {len(results)} results for: {query[:50]}...")
+        print(f" Web search returned {len(results)} results for: {query[:50]}...")
         return results
         
     except ImportError:
-        print("❌ tavily-python not installed. Run: pip install tavily-python")
+        print(" tavily-python not installed. Run: pip install tavily-python")
         return []
     except Exception as e:
-        print(f"❌ Web search error: {str(e)}")
+        print(f" Web search error: {str(e)}")
         return []
 
 
@@ -431,12 +431,12 @@ Be thorough but efficient - don't search more than necessary."""
                 return (final_answer, unique_citations[:5], thought_process)
                 
         except Exception as e:
-            print(f"❌ ReAct iteration error: {str(e)}")
+            print(f" ReAct iteration error: {str(e)}")
             thought_process.append(f"⚠️ Error: {str(e)}")
             break
     
     # Max iterations reached - summarize what we have
-    print(f"\n⚠️ Max iterations ({MAX_ITERATIONS}) reached, generating summary...")
+    print(f"\n Max iterations ({MAX_ITERATIONS}) reached, generating summary...")
     thought_process.append(f"⏱️ Max iterations reached, summarizing results")
     
     if all_search_results:
@@ -492,30 +492,32 @@ async def get_web_agent_response(
         # Try LangGraph agent first (context-aware)
         from services.langgraph_agent import run_langgraph_agent
         
-        print(f"🌐 Using LangGraph agent with user context...")
-        answer, citations, thoughts = await run_langgraph_agent(
+        print(f" Using LangGraph agent with user context...")
+        answer, citations, reasoning_steps = await run_langgraph_agent(
             query=query,
             user_name=user_name,
             resume_text=resume_text,
             applications=applications
         )
         
-        return (answer, citations)
+        # Return answer, citations, and reasoning steps
+        return (answer, citations, reasoning_steps)
         
     except ImportError as e:
-        print(f"⚠️ LangGraph not available ({e}), falling back to ReAct agent...")
+        print(f" LangGraph not available ({e}), falling back to ReAct agent...")
         # Fallback to native OpenAI ReAct if LangGraph not installed
         answer, citations, thoughts = await run_react_agent(query, user_name)
-        return (answer, citations)
+        return (answer, citations, thoughts)
         
     except Exception as e:
-        print(f"❌ LangGraph agent error: {str(e)}")
+        print(f" LangGraph agent error: {str(e)}")
         import traceback
         print(traceback.format_exc())
         
         # Fallback to single-step search
-        print("⚠️ Falling back to single-step search...")
-        return await _fallback_single_search(query, user_name)
+        print(" Falling back to single-step search...")
+        answer, citations = await _fallback_single_search(query, user_name)
+        return (answer, citations, ["❌ Fallback to simple search"])
 
 
 async def _fallback_single_search(
