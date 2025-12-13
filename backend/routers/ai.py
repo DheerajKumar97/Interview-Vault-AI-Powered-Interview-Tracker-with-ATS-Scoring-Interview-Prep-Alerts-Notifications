@@ -12,6 +12,7 @@ from config import settings
 from services.ai_service import call_openai_api, truncate_text
 from services.supabase_service import get_admin_client
 from services.rag_service import search_user_context
+from services.web_agent_service import should_trigger_web_agent, get_web_agent_response
 from Policy_Knowledge_Base import get_policy_knowledge_base
 
 router = APIRouter()
@@ -38,6 +39,7 @@ class ChatRequest(BaseModel):
     message: str
     conversationHistory: Optional[list] = None
     user: Optional[dict] = None
+    useWebAgent: Optional[bool] = False  # Flag to trigger web search
 
 
 # Application knowledge base for chatbot
@@ -588,6 +590,67 @@ async def chat(request: ChatRequest):
                 import traceback
                 print(traceback.format_exc())
                 rag_context = ""  # Fallback handled below
+
+        # ═══════════════════════════════════════════════════════════════
+        # WEB AGENT: EXTERNAL SEARCH FOR CAREER-RELATED QUERIES
+        # ═══════════════════════════════════════════════════════════════
+        
+        # Check if RAG found relevant internal data
+        rag_found_relevant = bool(rag_context and len(rag_context.strip()) > 50)
+        
+        # Determine if web agent should be triggered
+        web_agent_suggested = should_trigger_web_agent(message, rag_found_relevant)
+        
+        if web_agent_suggested and not request.useWebAgent:
+            # Suggest web agent but don't execute - let user confirm
+            print(f"🌐 Web Agent: Suggesting web search for query: '{message[:50]}...'")
+            
+            if is_authenticated and user_name:
+                suggestion_response = f"Sure **{user_name}**,\n\nThis looks like a question about external career information. I can search the web for up-to-date details about this topic.\n\n🌐 **Would you like me to search the web for:** \"{message[:100]}{'...' if len(message) > 100 else ''}\"?"
+            else:
+                suggestion_response = f"This looks like a question about external career information. I can search the web for up-to-date details.\n\n🌐 **Would you like me to search the web for:** \"{message[:100]}{'...' if len(message) > 100 else ''}\"?"
+            
+            return {
+                "success": True,
+                "response": suggestion_response,
+                "queryType": "suggest_web_agent",
+                "suggestWebAgent": True,
+                "originalQuery": message
+            }
+        
+        elif request.useWebAgent:
+            # User confirmed web search - execute web agent with user context
+            print(f"🌐 Web Agent: Executing web search for query: '{message[:50]}...'")
+            
+            # Get user's resume text for context (experience level, skills)
+            resume_text_for_agent = ""
+            if hasattr(chat, "resume_cache") and user.get("id") and str(user["id"]) in chat.resume_cache:
+                resume_text_for_agent = chat.resume_cache[str(user["id"])]
+            
+            web_response, citations = await get_web_agent_response(
+                query=message, 
+                user_name=user_name,
+                resume_text=resume_text_for_agent,
+                applications=applications
+            )
+            
+            # Add greeting prefix for authenticated users
+            if is_authenticated and user_name:
+                prefix = "Hi" if message_count == 0 else "Sure"
+                web_response = f"{prefix} **{user_name}**,\n\n{web_response}"
+            
+            # Add citation links if available
+            if citations:
+                web_response += "\n\n---\n📚 **Sources:**\n"
+                for i, cite in enumerate(citations[:5], 1):
+                    web_response += f"{i}. [{cite['title'][:50]}...]({cite['url']})\n"
+            
+            return {
+                "success": True,
+                "response": web_response,
+                "queryType": "web_agent",
+                "webSources": citations
+            }
 
         # Build system prompt with comprehensive rules
         system_prompt = f"""🚨🚨🚨 CRITICAL RULE #1 - READ THIS IMMEDIATELY 🚨🚨🚨

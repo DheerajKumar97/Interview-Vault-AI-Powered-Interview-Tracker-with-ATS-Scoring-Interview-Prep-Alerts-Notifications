@@ -29,6 +29,7 @@ class Settings:
     GEMINI_API_KEY: str = os.getenv('GEMINI_API_KEY', '')
     HUGGINGFACE_API_KEY: str = os.getenv('HUGGINGFACE_API_KEY', '')
     OPENAI_API_KEY: str = os.getenv('OPENAI_API_KEY') or os.getenv('OPEN_API_KEY', '')
+    TAVILY_API_KEY: str = os.getenv('TAVILY_API_KEY', '')
     
     # Application URLs
     FRONTEND_URL: str = os.getenv('FRONTEND_URL', 'https://dheerajkumar-k-interview-vault.netlify.app')

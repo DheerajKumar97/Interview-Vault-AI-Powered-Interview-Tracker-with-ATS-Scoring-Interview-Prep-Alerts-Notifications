@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Maximize2, Minimize2, Trash2 } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Maximize2, Minimize2, Trash2, Globe } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
@@ -13,6 +13,8 @@ interface Message {
     text: string;
     sender: 'user' | 'bot';
     timestamp: Date;
+    suggestWebAgent?: boolean;
+    originalQuery?: string;
 }
 
 export default function ChatBot() {
@@ -23,6 +25,7 @@ export default function ChatBot() {
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [userMessageCount, setUserMessageCount] = useState(0);
+    const [pendingWebAgentQuery, setPendingWebAgentQuery] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -503,7 +506,14 @@ export default function ChatBot() {
                 text: response.data.response,
                 sender: 'bot',
                 timestamp: new Date(),
+                suggestWebAgent: response.data.suggestWebAgent || false,
+                originalQuery: response.data.originalQuery || inputMessage,
             };
+
+            // If web agent is suggested, store the query for later
+            if (response.data.suggestWebAgent) {
+                setPendingWebAgentQuery(response.data.originalQuery || inputMessage);
+            }
 
             setMessages((prev) => {
                 const newMessages = [...prev, botMessage];
@@ -534,6 +544,72 @@ export default function ChatBot() {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSendMessage();
+        }
+    };
+
+    // Handler for web agent search button
+    const handleWebAgentSearch = async (query: string) => {
+        if (isLoading) return;
+        setIsLoading(true);
+        setPendingWebAgentQuery(null);
+
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+
+            // Add a loading message
+            const searchingMessage: Message = {
+                id: Date.now().toString(),
+                text: '🔍 **Searching the web...**',
+                sender: 'bot',
+                timestamp: new Date(),
+            };
+            setMessages(prev => [...prev, searchingMessage]);
+
+            const response = await axios.post(`${API_BASE_URL}/chat`, {
+                message: query,
+                conversationHistory: [],
+                user: user ? {
+                    id: user.id,
+                    email: user.email,
+                    name: user.user_metadata?.full_name || user.email?.split('@')[0],
+                    isAuthenticated: true,
+                    messageCount: userMessageCount
+                } : {
+                    isAuthenticated: false,
+                    messageCount: userMessageCount
+                },
+                useWebAgent: true  // Trigger web search
+            });
+
+            // Remove the searching message and add the actual response
+            const webAgentMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                text: response.data.response,
+                sender: 'bot',
+                timestamp: new Date(),
+            };
+
+            setMessages(prev => {
+                // Remove the searching message
+                const filtered = prev.filter(m => m.text !== '🔍 **Searching the web...**');
+                const newMessages = [...filtered, webAgentMessage];
+                saveChatToStorage(user?.id || null, newMessages);
+                return newMessages;
+            });
+        } catch (error) {
+            console.error('Error in web agent search:', error);
+            setMessages(prev => {
+                const filtered = prev.filter(m => m.text !== '🔍 **Searching the web...**');
+                const errorMsg: Message = {
+                    id: (Date.now() + 1).toString(),
+                    text: "I'm sorry, the web search failed. Please try again.",
+                    sender: 'bot',
+                    timestamp: new Date(),
+                };
+                return [...filtered, errorMsg];
+            });
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -632,6 +708,17 @@ export default function ChatBot() {
                                                 minute: '2-digit',
                                             })}
                                         </div>
+                                        {/* Web Agent Button - appears when web search is suggested */}
+                                        {message.sender === 'bot' && message.suggestWebAgent && message.originalQuery && (
+                                            <Button
+                                                onClick={() => handleWebAgentSearch(message.originalQuery!)}
+                                                disabled={isLoading}
+                                                className="mt-3 w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-medium py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+                                            >
+                                                <Globe className="h-4 w-4" />
+                                                🌐 Connect to Web Agent
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
                             ))}
