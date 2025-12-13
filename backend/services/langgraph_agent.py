@@ -827,8 +827,10 @@ async def search_node(state: AgentState) -> AgentState:
     print(f"\n📍 Node: search")
     
     if not settings.TAVILY_API_KEY:
-        print(" TAVILY_API_KEY not configured")
-        state["reasoning_steps"].append("⚠️ Web search not available")
+        print("   ⚠️ TAVILY_API_KEY not configured")
+        state["reasoning_steps"].append("⚠️ Web search not available (API key missing)")
+        state["iteration"] = state["max_iterations"]  # Force exit the loop
+        state["should_continue"] = False
         return state
     
     all_results = []
