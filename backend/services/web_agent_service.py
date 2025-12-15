@@ -41,14 +41,37 @@ WEB_AGENT_TRIGGER_KEYWORDS = [
     "skill roadmap",
     "learning path",
     
-    # Job market
+    # Job market & Salary (COMPREHENSIVE)
     "job market",
     "salary for",
     "average salary",
     "salary range",
+    "reasonable salary",
+    "salary expectation",
+    "expect salary",
+    "expected salary",
+    "ask for salary",
+    "demand salary",
+    "how much should i ask",
+    "how much can i ask",
+    "how much can i demand",
+    "what salary can i",
+    "what salary should i",
     "compensation for",
+    "salary negotiation",
+    "negotiate salary",
+    "salary package",
+    "ctc for",
+    "ctc at",
+    "lpa for",
     "job trends",
+    "market fit",
+    "fit my profile",
+    "profile fit",
     "hiring trends",
+    "compare salary",
+    "compare companies",
+
     
     # Company research - FLEXIBLE KEYWORDS (no 'at' required)
     "company culture",

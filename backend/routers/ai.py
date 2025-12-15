@@ -439,9 +439,9 @@ async def chat(request: ChatRequest):
                 # Now query for this specific user
                 response = supabase.table("applications").select("*").eq("user_id", user["id"]).execute()
 
-                print(f" Raw Supabase response: {response}")
+                #print(f" Raw Supabase response: {response}")
                 print(f" Response data type: {type(response.data)}")
-                print(f" Response data: {response.data}")
+                #print(f" Response data: {response.data}")
 
                 applications = response.data or []
 
@@ -449,11 +449,16 @@ async def chat(request: ChatRequest):
                 print(f" Applications fetched: {len(applications)}")
 
                 if applications:
-                    print(f" Applications found:")
-                    for idx, app in enumerate(applications):
-                        print(f"   {idx+1}. {app.get('company_name', 'Unknown')} - {app.get('job_title', 'N/A')}")
+                    print(f" Applications found: {len(applications)}")
+                    # DEBUG: Print ALL keys from first application to identify field names
+                    if applications:
+                        print(f" 🔍 DEBUG - First app keys: {list(applications[0].keys())}")
+                        print(f" 🔍 DEBUG - First app data: name={applications[0].get('name')}, company={applications[0].get('company')}, company_name={applications[0].get('company_name')}")
+                    for idx, app in enumerate(applications[:3]):  # Only print first 3
+                        company = app.get('name') or app.get('company') or app.get('company_name') or 'Unknown'
+                        print(f"   {idx+1}. {company} - {app.get('job_title', 'N/A')}")
                 else:
-                    print(f"⚠️ No applications returned from query")
+                    print(f" No applications returned from query")
 
                 if applications:
                     total_apps = len(applications)

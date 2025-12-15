@@ -40,5 +40,6 @@ tavily-python>=0.3.0
 
 # LangChain/LangGraph for Context-Aware Agent
 langchain>=0.2.0
+langchain-core>=0.2.0
 langchain-openai>=0.1.0
 langgraph>=0.1.0
